@@ -36,9 +36,7 @@ const CustomInputWithLabelAndLength = props => {
   });
   const {id, onInputChange} = props;
   useEffect(() => {
-    if (inputState.touched) {
-      onInputChange(id, inputState.value, inputState.isValid);
-    }
+    onInputChange(id, inputState.value, inputState.isValid);
   }, [id, onInputChange, inputState]);
 
   const textChangeHandler = text => {
@@ -111,7 +109,6 @@ const styles = StyleSheet.create({
   viewBorders: {
     width: '100%',
     color: 'black',
-
   },
   textAlignment: {
     flexDirection: 'row',

@@ -93,18 +93,20 @@ const VerificationFormDetailScreen = props => {
             </SkeletonPlaceHolder>
           ) : (
             <View style={styles.imagePreview}>
-              <TouchableWithoutFeedback
-                onPress={() => {
-                  isLoading ? '' : setIsPermitVisible(true);
-                }}>
-                <Image
-                  resizeMode="stretch"
-                  style={styles.image}
-                  source={{
-                    uri: businessPermitImage,
-                  }}
-                />
-              </TouchableWithoutFeedback>
+              {businessPermitImage && (
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    isLoading ? '' : setIsPermitVisible(true);
+                  }}>
+                  <Image
+                    resizeMode="stretch"
+                    style={styles.image}
+                    source={{
+                      uri: businessPermitImage,
+                    }}
+                  />
+                </TouchableWithoutFeedback>
+              )}
             </View>
           )}
           <ImageView

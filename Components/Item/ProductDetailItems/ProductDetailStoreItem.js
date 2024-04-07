@@ -10,11 +10,12 @@ import {
   FlatList,
 } from 'react-native';
 import storage from '@react-native-firebase/storage';
+import MainButton from '../../UI/CustomButton/MainButton';
 const ProductDetailStoreItem = props => {
   const [isLoading, setIsLoading] = useState(false);
   const [productImage, setProductImage] = useState();
   const [sName, setSName] = useState('');
-
+ 
   useEffect(() => {
     if (props.storeIcon == '' || props.name == '') {
       return;
@@ -36,33 +37,47 @@ const ProductDetailStoreItem = props => {
   return (
     <View style={styles.container}>
       <View style={styles.storeContainer}>
-        {productImage && (
-          <Image
-            resizeMode="stretch"
-            style={styles.storeImage}
-            source={{uri: productImage}}
-          />
-        )}
-        <Text
-          style={{
-            color: 'black',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-          }}>
-          {sName}
-        </Text>
+        <View style={styles.textContainer}>
+          {productImage && (
+            <Image
+              resizeMode="stretch"
+              style={styles.storeImage}
+              source={{uri: productImage}}
+            />
+          )}
+          <Text
+            style={{
+              color: 'black',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+            }}>
+            {sName}
+          </Text>
+        </View>
+
+        <View style={styles.button}>
+          <MainButton label="Visit Store" onPress={props.goToStoreHandler} />
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {marginTop: 5},
+  container: {marginTop: 5, flexDirection: 'row'},
   storeContainer: {
     backgroundColor: '#FFFFFF',
     width: '100%',
     padding: 10,
     flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  textContainer: {
+    flexDirection: 'row',
+  },
+  button: {
+    width: '25%',
+    height: '50%',
   },
   storeImage: {
     backgroundColor: 'black',

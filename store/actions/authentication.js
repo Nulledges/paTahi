@@ -5,13 +5,14 @@ import firestore from '@react-native-firebase/firestore';
 export const AUTHENTICATE = 'AUTHENTICATE';
 export const LOGOUT = 'LOGOUT';
 
-export const authenticate = (userId, token, userType) => {
+export const authenticate = (userId, token, userType, isTailor) => {
   return dispatch => {
     dispatch({
       type: AUTHENTICATE,
       userId: userId,
       token: token,
       userType: userType,
+      isTailor: isTailor,
     });
   };
 };
@@ -31,7 +32,7 @@ export const loginWithEmailandPassword = (email, password) => {
                 .get()
                 .then(documentSnapshot => {
                   const userData = documentSnapshot.data();
-        
+
                   auth()
                     .currentUser.getIdTokenResult()
                     .then(idTokenResult => {
@@ -40,6 +41,7 @@ export const loginWithEmailandPassword = (email, password) => {
                           user.uid,
                           idTokenResult.token,
                           userData.userType,
+                          userData.isTailor,
                         ),
                       );
                     });
@@ -83,6 +85,7 @@ export const signupWithEmailandPassword = (
   password,
   fullname,
   username,
+  phoneNumber,
 ) => {
   return async dispatch => {
     auth()
@@ -98,16 +101,15 @@ export const signupWithEmailandPassword = (
                   .collection('Users')
                   .doc(user.uid)
                   .set({
-
                     email: user.email,
                     isTailor: false,
                     name: fullname,
-                    phoneNumber: '',
+                    phoneNumber: phoneNumber,
                     profileBanner: 'defaultProfileBanner.jpg',
                     profileIcon: 'defaultProfileIcon.png',
                     userType: 'User',
                     username: username,
-                    notificationToken:''
+                    notificationToken: '',
                   })
                   .then(() => {
                     firestore()
@@ -124,6 +126,7 @@ export const signupWithEmailandPassword = (
                                 user.uid,
                                 idTokenResult.token,
                                 userData.userType,
+                                userData.isTailor,
                               ),
                             );
                           });

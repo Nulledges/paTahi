@@ -6,6 +6,7 @@ import {
   TextInput,
   Button,
   Image,
+  TouchableOpacity,
   TouchableWithoutFeedback,
   StyleSheet,
 } from 'react-native';
@@ -15,12 +16,12 @@ import NormalCustomInput from '../../Components/UI/Inputs/NormalCustomInput';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as chatActions from '../../store/actions/chat';
 import {useState} from 'react';
-
+import ChatListItem from '../../Components/Item/ChatListItem';
 
 const ChatScreen = props => {
   const chatList = useSelector(state => state.chat.chatList);
   const userId = useSelector(state => state.auth.userId);
-  const [name, setName] = useState('');
+
   const dispatch = useDispatch();
   useEffect(() => {
     try {
@@ -32,43 +33,29 @@ const ChatScreen = props => {
   }, []);
 
   const renderItem = ({item}) => {
+    console.log(item);
     return (
       <View style={styles.itemContainer}>
-        <TouchableWithoutFeedback
+        <TouchableOpacity
           onPress={() => {
             props.navigation.navigate('CHATROOM', {
               chatId: item.id,
+              storeName: item.storeName,
+              storeIcon: item.storeIcon,
             });
           }}>
-          <View style={styles.infoContainer}>
-            <Image
-              resizeMode="stretch"
-              style={styles.ProfileImage}
-              source={{uri: 'https://wallpaperaccess.com/full/317501.jpg'}}
-            />
-            <Text
-              style={{
-                color: 'black',
-                justifyContent: 'center',
-                alignSelf: 'center',
-                marginLeft: 10,
-                textTransform: 'capitalize',
-                fontWeight: 'bold',
-                fontSize: 16,
-              }}>
-              {item.memberInfo.map(info => {
-                if (userId != info.id) {
-                  return info.name;
-                }
-              })}
-            </Text>
-          </View>
-        </TouchableWithoutFeedback>
+          <ChatListItem storeIcon={item.storeIcon} storeName={item.storeName} />
+        </TouchableOpacity>
       </View>
     );
   };
   return (
     <View style={styles.container}>
+      {chatList.length === 0 && (
+        <Card style={styles.cardContainer}>
+          <Text style={styles.textStyle}>Nothing to chat.</Text>
+        </Card>
+      )}
       <FlatList
         contentContainerStyle={{
           flexGrow: 1,
@@ -101,10 +88,21 @@ const styles = StyleSheet.create({
     height: 55,
     width: 55,
   },
+  cardContainer: {
+    flex: 1,
+    width: '97%',
+    maxHeight: 146,
+    margin: 5,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textStyle: {
+    color: 'black',
+  },
 });
 export default ChatScreen;
-
-
 
 /* const chat = [
   {id: '1', chatName: 'John Doe'},

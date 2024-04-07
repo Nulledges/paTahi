@@ -1,7 +1,11 @@
+import {ToastAndroid, Alert} from 'react-native';
+
 import stores from '../../models/stores';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 
+import auth from '@react-native-firebase/auth';
+import {authenticate} from './authentication';
 export const SET_USER_STORE = 'SET_USER_STORE';
 export const SET_APPROVED_STORE = 'SET_APPROVED_STORE';
 export const SET_APPROVED_CART_STORE = 'SET_APPROVED_CART_STORE';
@@ -10,65 +14,134 @@ export const SET_SPECIFIC_STORE = 'SET_SPECIFIC_STORE';
 export const createStore = (
   storeName,
   storeOwner,
+  phone,
   storeImageUri,
   storeImageFilename,
   storeIconUri,
   storeIconFileName,
   email,
-  phone,
+  password,
   latitude,
   longitude,
 ) => {
   return async (dispatch, getState) => {
-    const userId = getState().auth.userId;
-    storage()
-      .ref(`stores/banners/${storeImageFilename}`)
-      .putFile(storeImageUri)
-      .on('state_changed', taskSnapshot => {
-        console.log(
-          `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-        );
-      });
-    storage()
-      .ref(`stores/icons/${storeIconFileName}`)
-      .putFile(storeIconUri)
-      .on('state_changed', taskSnapshot => {
-        console.log(
-          `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-        );
-      });
-    firestore()
-      .collection('stores')
-      .add({
-        activeProduct: 0,
-        email: email,
-        inactiveProduct: 0,
-        latitude: latitude,
-        longitude: longitude,
-        phoneNumber: phone,
-        status: 'verification needed',
-        storeImage: storeImageFilename,
-        storeIcon: storeIconFileName,
-        userId: userId,
-        storeName: storeName,
-        storeOwner: storeOwner,
-      })
+    auth()
+      .createUserWithEmailAndPassword(email, password)
       .then(() => {
-        firestore()
-          .collection('stores')
-          .where('userId', '==', userId)
-          .get()
-          .then(querySnapshot => {
-            querySnapshot.docs.forEach(documentSnapshot => {
-              const storeId = documentSnapshot.id;
-              firestore()
-                .collection('stores')
-                .doc(storeId)
-                .update({storeId: storeId});
-            });
+        const unsubcribe = () => {
+          let initialize = false;
+          auth().onAuthStateChanged(user => {
+            if (user) {
+              if (!initialize) {
+                initialize = true;
+                firestore()
+                  .collection('Users')
+                  .doc(user.uid)
+                  .set({
+                    email: user.email,
+                    isTailor: true,
+                    name: storeOwner,
+                    phoneNumber: parseInt(phone),
+                    profileBanner: 'defaultProfileBanner.jpg',
+                    profileIcon: 'defaultProfileIcon.png',
+                    userType: 'User',
+                    username: storeName,
+                    notificationToken: '',
+                  })
+                  .then(() => {
+                    firestore()
+                      .collection('Users')
+                      .doc(user.uid)
+                      .get()
+                      .then(documentSnapshot => {
+                        const userData = documentSnapshot.data();
+                        auth()
+                          .currentUser.getIdTokenResult()
+                          .then(idTokenResult => {
+                            dispatch(
+                              authenticate(
+                                user.uid,
+                                idTokenResult.token,
+                                userData.userType,
+                                userData.isTailor,
+                              ),
+                            );
+                          })
+                          .then(() => {
+                            storage()
+                              .ref(`stores/banners/${storeImageFilename}`)
+                              .putFile(storeImageUri)
+                              .on('state_changed', taskSnapshot => {
+                                console.log(
+                                  `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+                                );
+                              });
+                            storage()
+                              .ref(`stores/icons/${storeIconFileName}`)
+                              .putFile(storeIconUri)
+                              .on('state_changed', taskSnapshot => {
+                                console.log(
+                                  `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+                                );
+                              });
+
+                            firestore()
+                              .collection('stores')
+                              .add({
+                                activeProduct: 0,
+                                email: email,
+                                inactiveProduct: 0,
+                                latitude: latitude,
+                                longitude: longitude,
+                                phoneNumber: parseInt(phone),
+                                status: 'verification needed',
+                                storeImage: storeImageFilename,
+                                storeIcon: storeIconFileName,
+                                userId: user.uid,
+                                storeName: storeName,
+                                storeOwner: storeOwner,
+                                isSubscribed: false,
+                                subscriptionId: '',
+                              })
+                              .then(() => {
+                                firestore()
+                                  .collection('stores')
+                                  .where('userId', '==', user.uid)
+                                  .get()
+                                  .then(querySnapshot => {
+                                    querySnapshot.docs.forEach(
+                                      documentSnapshot => {
+                                        const storeId = documentSnapshot.id;
+                                        firestore()
+                                          .collection('stores')
+                                          .doc(storeId)
+                                          .update({storeId: storeId});
+                                      },
+                                    );
+                                  });
+                              });
+                          });
+                      });
+                  });
+              }
+            }
           });
+        };
+        return unsubcribe();
+      })
+      .catch(error => {
+        switch (error.code) {
+          case 'auth/invalid-email':
+            Alert.alert('Error!', 'Invalid email.');
+            break;
+          case 'auth/weak-password':
+            Alert.alert('Error!', 'Password must be 6 characters or longer.');
+            break;
+          case 'auth/email-already-in-use':
+            Alert.alert('Error!', 'Email address already taken.');
+            break;
+        }
       });
-    firestore().collection('Users').doc(userId).update({isTailor: true});
   };
 };
 export const fetchUserStore = (dispatch, getState) => {
@@ -131,7 +204,6 @@ export const fetchAllApprovedStore = (dispatch, getState) => {
             approvedStore.activeProduct,
             approvedStore.email,
             approvedStore.inactiveProduct,
-            approvedStore.location,
             approvedStore.phoneNumber,
             approvedStore.status,
             approvedStore.storeIcon,
@@ -139,6 +211,10 @@ export const fetchAllApprovedStore = (dispatch, getState) => {
             approvedStore.storeName,
             approvedStore.storeOwner,
             item.id,
+            approvedStore.latitude,
+            approvedStore.longitude,
+            approvedStore.isSubscribed,
+            approvedStore.subscriptionId,
           ),
         );
       });
@@ -164,7 +240,6 @@ export const fetchCartStore = storeId => {
               approvedStore.activeProduct,
               approvedStore.email,
               approvedStore.inactiveProduct,
-              approvedStore.location,
               approvedStore.phoneNumber,
               approvedStore.status,
               approvedStore.storeIcon,
@@ -172,6 +247,10 @@ export const fetchCartStore = storeId => {
               approvedStore.storeName,
               approvedStore.storeOwner,
               item.id,
+              approvedStore.latitude,
+              approvedStore.longitude,
+              approvedStore.isSubscribed,
+              approvedStore.subscriptionId,
             ),
           );
         });
@@ -199,7 +278,6 @@ export const fetchSpecificStore = storeId => {
               approvedStore.activeProduct,
               approvedStore.email,
               approvedStore.inactiveProduct,
-              approvedStore.location,
               approvedStore.phoneNumber,
               approvedStore.status,
               approvedStore.storeIcon,
@@ -207,6 +285,10 @@ export const fetchSpecificStore = storeId => {
               approvedStore.storeName,
               approvedStore.storeOwner,
               item.id,
+              approvedStore.latitude,
+              approvedStore.longitude,
+              approvedStore.isSubscribed,
+              approvedStore.subscriptionId,
             ),
           );
         });
@@ -306,6 +388,52 @@ export const updateStoreOwner = (storeId, storeOwner) => {
       await batch.commit();
     } catch (error) {
       console.error('Error updating Store owner Name:', error);
+    }
+  };
+};
+
+export const eraseStoreSubscriptionId = storeId => {
+  return async (dispatch, getState) => {
+    try {
+      const batch = firestore().batch();
+
+      const storeRef = firestore().collection('stores').doc(storeId);
+      batch.update(storeRef, {subscriptionId: ''});
+
+      await batch.commit();
+    } catch (error) {
+      console.error('Error updating Subcription:', error);
+    }
+  };
+};
+
+export const updateSubscriptionId = (storeId, subscriptionId) => {
+  return async (dispatch, getState) => {
+    try {
+      const batch = firestore().batch();
+
+      const storeRef = firestore().collection('stores').doc(storeId);
+      batch.update(storeRef, {subscriptionId: subscriptionId});
+
+      await batch.commit();
+      console.log('update successful');
+    } catch (error) {
+      console.error('Error updating Subcription:', error);
+    }
+  };
+};
+export const updateIsSubscribe = storeId => {
+  return async (dispatch, getState) => {
+    try {
+      const batch = firestore().batch();
+
+      const storeRef = firestore().collection('stores').doc(storeId);
+      batch.update(storeRef, {isSubscribed: true});
+
+      await batch.commit();
+      console.log('update successful');
+    } catch (error) {
+      console.error('Error updating Subcription:', error);
     }
   };
 };

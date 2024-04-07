@@ -5,7 +5,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import storage from '@react-native-firebase/storage';
 import Card from '../UI/Card';
 import TwoLabelButton from '../UI/CustomButton/TwoLabelButton';
-const OrderDetailItems = props => {
+const OrderDetailItem = props => {
   const [productImage, setProductImage] = useState();
   useEffect(() => {
     const downloadProductImage = async () => {
@@ -29,26 +29,6 @@ const OrderDetailItems = props => {
           ₱ {parseInt(props.productPrice).toFixed(2)}
         </Text>
       </View>
-      <Card style={styles.cardContainer}>
-        {props.reqMeasurements.map(item => {
-          if (
-            props.myMeasurements.measurement[item] == undefined ||
-            props.myMeasurements.measurement[item.toLowerCase()] == 0
-          ) {
-          }
-          return (
-            <TwoLabelButton
-              key={item}
-              FirstTextStyle={{paddingLeft: 25}}
-              firstLabel={item.toLowerCase()}
-              secondTextStyle={{paddingRight: 25}}
-              secondLabel={
-                props.myMeasurements.measurement[item.toLowerCase()] + ' inches'
-              }
-            />
-          );
-        })}
-      </Card>
     </Card>
   );
 };
@@ -79,4 +59,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 });
-export default OrderDetailItems;
+export default OrderDetailItem;

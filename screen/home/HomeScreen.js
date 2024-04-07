@@ -7,7 +7,11 @@ import {
   TouchableNativeFeedbackBase,
   Modal,
   ScrollView,
+  PermissionsAndroid,
+  Linking,
+  Alert,
 } from 'react-native';
+import functions from '@react-native-firebase/functions';
 import {useDispatch, useSelector} from 'react-redux';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -19,13 +23,14 @@ import MainButton from '../../Components/UI/CustomButton/MainButton';
 import WebViewItem from '../../Components/Item/WebViewItem';
 import * as userActions from '../../store/actions/user';
 
+import * as cartActions from '../../store/actions/cart';
+import * as notificationActions from '../../store/actions/notification';
 const HomeScreen = props => {
   const dispatch = useDispatch();
   const userToken = useSelector(state => state.auth.token);
   const userId = useSelector(state => state.auth.userId);
-  const cartItems = useSelector(state => state.cart.items);
+  const cartProducts = useSelector(state => state.cart.cartProducts);
   const userInfo = useSelector(state => state.user.myInformation);
-  const [showWebView, setShowWebView] = useState(false);
 
   useEffect(() => {
     //headerRight
@@ -40,8 +45,21 @@ const HomeScreen = props => {
             }
           }}>
           <View>
-            {cartItems.length > 0 && (
-              <View style={styles.redDotContainer}></View>
+            {cartProducts.length > 0 && (
+              <View
+                style={{
+                  alignItems: 'center',
+                  alignSelf: 'flex-end',
+                  backgroundColor: 'red',
+                  zIndex: 100,
+                  right: 1,
+                  width: 12.5,
+                  position: 'absolute',
+                  borderRadius: 100,
+                  opacity: 0.9,
+                }}>
+                <Text style={{fontWeight: 'bold'}}>{cartProducts.length}</Text>
+              </View>
             )}
             <Ionicons name="md-cart" size={24} color="black" />
           </View>
@@ -49,11 +67,64 @@ const HomeScreen = props => {
       ),
     });
   });
-
+  //fetching Data
+  useEffect(() => {
+    try {
+      if (userToken) {
+        const unsubcribe = dispatch(userActions.fetchUserData);
+        return unsubcribe;
+      }
+    } catch (error) {
+      console.log('Error at MyAccountScreen: ' + error);
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      if (userToken) {
+        const unsubcribe = dispatch(
+          notificationActions.fetchActiveNotification,
+        );
+        return unsubcribe;
+      }
+    } catch (error) {
+      console.log('Error at MyAccountScreen: ' + error);
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      if (userToken) {
+        const unsubcribe = dispatch(cartActions.fetchCartItems(userId));
+        return unsubcribe;
+      }
+    } catch (error) {
+      console.log('Error at MyAccountScreen: ' + error);
+    }
+  }, []);
+  /*   useEffect(() => {
+    try {
+      if (userToken) {
+        const unsubcribe = dispatch(orderActions.fetchOneUnseen);
+        return unsubcribe;
+      }
+    } catch (error) {
+      console.log('Error at MyAccountScreen: ' + error);
+    }
+  }, []); */
   useEffect(() => {
     //DeviceToken
     if (userToken) {
       const bootstrap = async () => {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        );
+
+ /*        if (granted == 'denied' || granted == 'never_ask_again') {
+          Alert.alert(
+            'Notification Needed',
+            'Notification is needed to work please turn on the notification',
+            [{text: 'OK', onPress: () => openAppSettings()}],
+          );
+        } */
         await messaging().registerDeviceForRemoteMessages();
         const token = await messaging().getToken();
         dispatch(userActions.updateNotificationToken(token, userId));
@@ -61,7 +132,33 @@ const HomeScreen = props => {
       bootstrap();
     }
   }, []);
+  const requestLocationPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+      ]);
 
+      if (
+        granted['android.permission.ACCESS_COARSE_LOCATION'] == 'granted' &&
+        granted['android.permission.ACCESS_FINE_LOCATION'] == 'granted'
+      ) {
+        props.navigation.navigate('FIND TAILORING');
+      } else {
+        Alert.alert(
+          'Location Permission Needed',
+          'Location Permission is needed to work',
+          [{text: 'OK', onPress: () => openAppSettings()}],
+        );
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+  const openAppSettings = () => {
+    // Open the app settings where the user can manually grant the permission
+    Linking.openSettings();
+  };
   /* UserAction.updateNotificationToken(token,) */
 
   /*   useEffect(() => {
@@ -76,10 +173,7 @@ const HomeScreen = props => {
       }
     });
   }, []);
-  
-
-  // it adds 30 days to a current date
-  /*  current.setDate(current.getDate() + 30);
+   current.setDate(current.getDate() + 30);
   console.log(current.toDateString()); */
 
   useEffect(() => {
@@ -101,25 +195,36 @@ const HomeScreen = props => {
     messaging().onMessage(onMessageReceived);
     messaging().setBackgroundMessageHandler(onMessageReceived);
   }, []);
+  const instantRefund = () => {
+    const refund = functions().httpsCallable('instantRefund');
 
+    refund({})
+      .then(result => {
+        const data = result.data;
+        console.log('Refund response:', data); // Log the response data for debugging or further processing
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  };
   return (
     <View style={styles.container}>
-      <Modal
-        animationType="slide"
-        visible={showWebView}
-        onRequestClose={!setShowWebView}>
-        <View style={{flex: 1}}>
-          <TouchableOpacity
-            onPress={() => {
-              setShowWebView(false);
-            }}
-            style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-
-          <WebViewItem cartId={userId} />
-        </View>
-      </Modal>
+      {/* <View style={styles.findTailoringContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            instantRefund();
+          }}>
+          <Text style={styles.itemsText}>REFUND</Text>
+        </TouchableOpacity>
+      </View> */}
+      <View style={styles.findTailoringContainer}>
+        <TouchableOpacity
+          onPress={() => {
+            requestLocationPermission();
+          }}>
+          <Text style={styles.itemsText}>FIND TAILORING</Text>
+        </TouchableOpacity>
+      </View>
       <View style={styles.itemContainer}>
         <TouchableOpacity
           onPress={() => {
@@ -127,7 +232,7 @@ const HomeScreen = props => {
           }}
           style={styles.items}>
           <Text style={styles.itemsText}>Products</Text>
-          <Ionicons name="shirt-outline" size={150} color="#900D09" />
+       {/*    <Ionicons name="shirt-outline" size={150} color="#900D09" /> */}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -136,20 +241,13 @@ const HomeScreen = props => {
           }}
           style={styles.items}>
           <Text style={styles.itemsText}>Stores</Text>
-          <MaterialCommunityIcons
+       {/*    <MaterialCommunityIcons
             name="store-outline"
             size={150}
             color="#000080"
-          />
+          /> */}
         </TouchableOpacity>
       </View>
-      <MainButton
-        onPress={() => {
-  
-          setShowWebView(true);
-        }}
-        label="Display WebView"
-      />
     </View>
   );
 };
@@ -170,9 +268,30 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     padding: 5,
   },
+  notificationIndicator: {
+    position: 'absolute',
+    zIndex: 100,
+    right: 0,
+    left: 0,
+    borderRadius: 50,
+    backgroundColor: 'red',
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
     backgroundColor: '#E8E8E8',
+  },
+  findTailoringContainer: {
+    width: '93%',
+    height: 50,
+    borderRadius: 10,
+    overflow: 'hidden',
+    padding: 10,
+    borderWidth: 1,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginTop: 10,
   },
   itemContainer: {
     flexDirection: 'row',

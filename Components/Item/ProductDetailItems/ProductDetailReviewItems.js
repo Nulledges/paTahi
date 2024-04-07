@@ -12,6 +12,19 @@ import {
 import {AirbnbRating} from 'react-native-ratings';
 import ProductReviewItem from './ProductReviewItem';
 const ProductDetailReviewItems = props => {
+  const ratings = props.ratings;
+
+  let totalRatings = 0;
+  let totalCount = 0;
+
+  for (const rating in ratings) {
+    const count = ratings[rating];
+    const numericRating = parseInt(rating.charAt(0)); // Extract the first character as the numeric rating value
+    totalRatings += numericRating * count;
+    totalCount += count;
+  }
+
+  const averageRating = totalRatings / totalCount;
   return (
     <View style={styles.container}>
       <View style={styles.starContainer}>
@@ -19,13 +32,15 @@ const ProductDetailReviewItems = props => {
           <Text style={styles.textStyle}>Reviews</Text>
           <View style={styles.star}>
             <AirbnbRating
-              defaultRating={0}
+              defaultRating={averageRating}
               size={13}
               showRating={false}
               isDisabled={true}
               count={5}
             />
-            <Text style={styles.reviewNumbers}>({0})</Text>
+            <Text style={styles.reviewNumbers}>
+              ({isNaN(averageRating) ? 0 : averageRating.toFixed(1)})
+            </Text>
           </View>
         </View>
       </View>
@@ -91,6 +106,7 @@ const ProductDetailReviewItems = props => {
 const styles = StyleSheet.create({
   container: {
     marginTop: 5,
+    marginBottom: 5,
   },
   starContainer: {
     backgroundColor: '#FFFFFF',
@@ -129,6 +145,7 @@ const styles = StyleSheet.create({
   showMoreContainer: {
     marginTop: 1,
     backgroundColor: '#FFFFFF',
+    marginBottom: 1,
   },
   showMoreInfoContainer: {
     width: '100%',

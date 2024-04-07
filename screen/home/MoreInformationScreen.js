@@ -1,30 +1,38 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, Image, StyleSheet} from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
 
-const MoreInfomationScreen = () => {
+import storeIcon from '../../icons/store.png';
+
+const MoreInfomationScreen = props => {
+  const lat = props.route.params.latitude;
+  const long = props.route.params.longitude;
   const Latlng = {
-    latitude: 7.063293878285977,
-    longitude: 125.59594255427733,
+    latitude: lat,
+    longitude: long,
   };
+
   return (
     <View style={styles.container}>
       <MapView
         initialRegion={{
-          latitude: 7.063293878285977,
-          longitude: 125.59594255427733,
+          latitude: lat,
+          longitude: long,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
-        style={{width: '100%', height: 250}}>
+        zoomEnabled={false}
+        scrollEnabled={false}
+        style={styles.mapSize}>
         <Marker
-          draggable
+          draggable={false}
           coordinate={Latlng}
-
           onDragEnd={e => {
             console.log('dragEnd', e.nativeEvent.coordinate);
           }}
-        />
+          title={props.route.params.storeName}>
+          <Image source={storeIcon} style={{width: 50, height: 50}} />
+        </Marker>
       </MapView>
     </View>
   );
@@ -36,6 +44,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     backgroundColor: '#E8E8E8',
     width: '100%',
+  },
+  mapSize: {
+    width: '100%',
+    height: 250,
   },
 });
 

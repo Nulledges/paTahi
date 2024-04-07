@@ -8,8 +8,14 @@ export const addMeasurement = (measurements, name) => {
     const userId = getState().auth.userId;
     const measurement = measurements;
     delete measurements.name;
-
-    firestore()
+    const measurementRef = firestore().collection('measurement').doc();
+    await measurementRef.set({
+      measurement: measurement,
+      name: name,
+      userId: userId,
+      measurementId: measurementRef.id,
+    });
+    /* firestore()
       .collection('measurement')
       .add({
         measurement: measurement,
@@ -33,7 +39,7 @@ export const addMeasurement = (measurements, name) => {
                 .update({measurementId: measurementId});
             });
           });
-      });
+      }); */
   };
 };
 export const fetchUserMeasurement = (dispatch, getState) => {

@@ -18,14 +18,17 @@ const CheckoutItems = props => {
   return (
     <Card style={styles.container}>
       <View style={styles.itemContainer}>
-        <TouchableOpacity onPress={props.onPress} style={styles.imageContainer}>
+        <View onPress={props.onPress} style={styles.imageContainer}>
           {productImage && (
             <Image style={styles.imageStyle} source={{uri: productImage}} />
           )}
-        </TouchableOpacity>
+        </View>
         <View style={styles.infoContainer}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.textStyle}>{props.productTitle}</Text>
+          <View>
+            <Text style={styles.textStyle}>
+              {props.productTitle}
+              {`(${props.chosenSize})`}
+            </Text>
           </View>
           <View style={styles.quantityContainer}>
             <Text style={styles.textStyle}>
@@ -35,7 +38,7 @@ const CheckoutItems = props => {
           </View>
         </View>
       </View>
-      <Card style={styles.cardContainer}>
+      {/*  <Card style={styles.cardContainer}>
         {props.reqMeasurements.map(item => {
           if (
             props.myMeasurements.measurement[item] == undefined ||
@@ -54,7 +57,7 @@ const CheckoutItems = props => {
             />
           );
         })}
-      </Card>
+      </Card> */}
     </Card>
   );
 };

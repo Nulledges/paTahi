@@ -95,101 +95,109 @@ const LoginScreen = props => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        <Card style={styles.itemContainer}>
-          {isLoading && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#000000" />
-            </View>
-          )}
-
-          <View style={styles.inputContainer}>
-            <View style={styles.inputStyle}>
-              <CustomInputWithLabel
-                //props send to customInput
-                initialValue=""
-                initiallyValid={false}
-                required
-                mail
-                isError={inputError}
-                labelText="EMAIL ADDRESS*"
-                placeHolder="Enter your email"
-                errorText="Invalid email!"
-                //props to add on custom input
-                id="email"
-                onInputChange={inputChangeHandler}
-                blurOnSubmit={false}
-                onSubmitEditing={() => passwordRef.current.focus()}
-                returnKeyType="next"
-              />
-            </View>
-            <View>
-              <CustomInputWithLabel
-                //props from customInput
-                initialValue=""
-                initiallyValid={false}
-                required
-                isError={inputError}
-                labelText="PASSWORD*"
-                placeHolder="Enter your password"
-                errorText="Invalid password"
-                //props to add on custom input
-                id="password"
-                forwardRef={passwordRef}
-                onSubmitEditing={authenticationHandler}
-                onInputChange={inputChangeHandler}
-                secureTextEntry={true}
-                returnKeyType="done"
-              />
-            </View>
-          </View>
-          <View style={styles.textContainer}>
-            <TouchableOpacity
-              onPress={() => {
-                props.navigation.navigate('FORGOT PASSWORD');
-              }}>
-              <Text style={styles.textStyle}>FORGOT PASSWORD?</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.buttonContainer}>
-            <MainButton label="LOG IN" onPress={authenticationHandler} />
-          </View>
-        </Card>
-        <Card style={styles.itemContainer}>
-          <MainButton
-            label="SIGN UP"
+      <Card style={styles.CardContainer}>
+        <CustomInputWithLabel
+          //props send to customInput
+          initialValue=""
+          initiallyValid={false}
+          required
+          mail
+          isError={inputError}
+          labelText="EMAIL ADDRESS*"
+          placeHolder="Enter your email"
+          errorText="Invalid email"
+          //props to add on custom input
+          id="email"
+          onInputChange={inputChangeHandler}
+          blurOnSubmit={false}
+          onSubmitEditing={() => passwordRef.current.focus()}
+          returnKeyType="next"
+        />
+        <CustomInputWithLabel
+          //props from customInput
+          initialValue=""
+          initiallyValid={false}
+          required
+          isError={inputError}
+          labelText="PASSWORD*"
+          placeHolder="Enter your password"
+          errorText="Invalid password"
+          //props to add on custom input
+          id="password"
+          forwardRef={passwordRef}
+          onSubmitEditing={authenticationHandler}
+          onInputChange={inputChangeHandler}
+          secureTextEntry={true}
+          returnKeyType="done"
+        />
+        <View style={styles.forgotPasswordContainer}>
+          <TouchableOpacity
             onPress={() => {
-              props.navigation.navigate('SIGN UP');
-            }}
-          />
-        </Card>
-      </ScrollView>
+              props.navigation.navigate('FORGOT PASSWORD');
+            }}>
+            <Text style={styles.textStyle}>FORGOT PASSWORD?</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.registrationContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate('USER REGISTRATION');
+            }}>
+            <Text style={styles.textStyle}>USER REGISTRATION</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate('TAILOR REGISTRATION');
+            }}>
+            <Text style={styles.textStyle}>TAILOR REGISTRATION</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          {isLoading == true ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="white" />
+            </View>
+          ) : (
+            <MainButton
+              style={styles.saveButton}
+              label="LOG IN"
+              onPress={authenticationHandler}
+            />
+          )}
+        </View>
+      </Card>
     </View>
   );
 };
 const styles = StyleSheet.create({
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    zIndex: 1000,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#E8E8E8',
-  },
-  itemContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    padding: 20,
+    backgroundColor: 'black',
+    borderRadius: 10,
+    height: 50,
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: '2%',
+    backgroundColor: '#E8E8E8',
+  },
+  CardContainer: {
+    width: '100%',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    borderRadius: 10,
+  },
+  itemContainer: {
+    width: '100%',
+    padding: 10,
     marginBottom: 10,
+    borderRadius: 10,
   },
   inputContainer: {
     width: '100%',
@@ -199,21 +207,105 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 10,
   },
-  textContainer: {
+  forgotPasswordContainer: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  registrationContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 10,
   },
   textStyle: {
+    marginVertical: 10,
     color: 'black',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 16,
+    textDecorationLine: 'underline',
   },
   buttonContainer: {
-    alignContent: 'center',
     width: '100%',
-    marginBottom: 10,
+  },
+  saveButton: {
+    width: '100%',
+    backgroundColor: 'black',
+    borderRadius: 10,
   },
 });
 export default LoginScreen;
+{
+  /*    <Card style={styles.itemContainer}>
+
+        <CustomInputWithLabel
+          //props send to customInput
+          initialValue=""
+          initiallyValid={false}
+          required
+          mail
+          isError={inputError}
+          labelText="EMAIL ADDRESS*"
+          placeHolder="Enter your email"
+          errorText="Invalid email!"
+          //props to add on custom input
+          id="email"
+          onInputChange={inputChangeHandler}
+          blurOnSubmit={false}
+          onSubmitEditing={() => passwordRef.current.focus()}
+          returnKeyType="next"
+        />
+
+        <CustomInputWithLabel
+          //props from customInput
+          initialValue=""
+          initiallyValid={false}
+          required
+          isError={inputError}
+          labelText="PASSWORD*"
+          placeHolder="Enter your password"
+          errorText="Invalid password"
+          //props to add on custom input
+          id="password"
+          forwardRef={passwordRef}
+          onSubmitEditing={authenticationHandler}
+          onInputChange={inputChangeHandler}
+          secureTextEntry={true}
+          returnKeyType="done"
+        />
+
+        <View style={styles.textContainer}>
+          <TouchableOpacity
+            onPress={() => {
+              props.navigation.navigate('FORGOT PASSWORD');
+            }}>
+            <Text style={styles.textStyle}>FORGOT PASSWORD?</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.buttonContainer}>
+          {isLoading == true ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="white" />
+            </View>
+          ) : (
+            <MainButton
+              style={styles.saveButton}
+              label="LOG IN"
+              onPress={authenticationHandler}
+            />
+          )}
+        </View>
+      </Card> */
+}
+{
+  /*  <Card style={styles.itemContainer}>
+        <MainButton
+          style={styles.saveButton}
+          label="SIGN UP"
+          onPress={() => {
+            props.navigation.navigate('SIGN UP');
+          }}
+        />
+      </Card> */
+}

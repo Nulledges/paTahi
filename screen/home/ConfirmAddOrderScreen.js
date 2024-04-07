@@ -22,7 +22,7 @@ const ConfirmAddOrderScreen = props => {
   const specificMeasurement = props.route.params?.specificMeasurement;
 
   const addToCartHandler = () => {
-    dispatch(cartActions.addToCart(specificProduct, specificMeasurement, 1));
+    dispatch(cartActions.addToCart(specificProduct, specificMeasurement, 2));
     props.navigation.navigate('PRODUCT DETAIL', {
       productId: specificProduct.id,
       storeId: specificProduct.storeId,

@@ -4,7 +4,6 @@ class stores {
     activeProduct,
     email,
     inactiveProduct,
-    location,
     phoneNumber,
     status,
     storeIcon,
@@ -12,12 +11,15 @@ class stores {
     storeName,
     storeOwner,
     userId,
+    latitude,
+    longitude,
+    isSubscribed,
+    subscriptionId,
   ) {
     this.storeId = storeId;
     this.activeProduct = activeProduct;
     this.email = email;
     this.inactiveProduct = inactiveProduct;
-    this.location = location;
     this.phoneNumber = phoneNumber;
     this.status = status;
     this.storeIcon = storeIcon;
@@ -25,6 +27,10 @@ class stores {
     this.storeName = storeName;
     this.storeOwner = storeOwner;
     this.userId = userId;
+    this.latitude = latitude;
+    this.longitude = longitude;
+    this.isSubscribed = isSubscribed;
+    this.subscriptionId = subscriptionId;
   }
 }
 

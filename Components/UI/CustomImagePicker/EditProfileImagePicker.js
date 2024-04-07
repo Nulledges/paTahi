@@ -13,6 +13,7 @@ import {
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Card from '../Card';
 import ErrorText from '../CustomText/ErrorText';
+import MainButton from '../CustomButton/MainButton';
 
 const IMAGE_CHANGE = 'IMAGE_CHANGE';
 const IMAGE_VALIDITY_CHANGE = 'IMAGE_VALIDITY_CHANGE';
@@ -155,68 +156,71 @@ const EditProfileImagePicker = props => {
         onRequestClose={() => {
           dispatch({type: IMAGE_VISIBILITY_CHANGE, isVisible: false});
         }}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Card style={styles.buttonModalContainer}>
-              <View style={styles.buttonMargin}>
-                <Button title="Take Image" onPress={takeImageHandler} />
-              </View>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            dispatch({type: IMAGE_VISIBILITY_CHANGE, isVisible: false});
+          }}>
+          <View style={styles.modalBackground}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <View style={styles.buttonModalContainer}>
+                  <View style={styles.buttonMargin}>
+                    <MainButton
+                      style={styles.blackButton}
+                      label="Take Image"
+                      onPress={takeImageHandler}
+                    />
+                  </View>
 
-              <View style={styles.buttonMargin}>
-                <Button title="Choose Image" onPress={chooseImageHandler} />
-              </View>
+                  <View>
+                    <MainButton
+                      style={styles.blackButton}
+                      label="Choose Image"
+                      onPress={chooseImageHandler}
+                    />
+                  </View>
 
-              <View style={styles.buttonMargin}>
+                  {/*           <View style={styles.buttonMargin}>
                 <Button
                   title="Cancel"
                   onPress={() => {
                     dispatch({type: IMAGE_VISIBILITY_CHANGE, isVisible: false});
                   }}
                 />
+              </View> */}
+                </View>
               </View>
-            </Card>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  viewContainer: {
-    width: '100%',
-  },
-  centeredView: {
+  modalBackground: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
-  /*   imagePreview: {
-    width: '100%',
-    height: 200,
-    marginBottom: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-  }, */
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  modalView: {
-    margin: 20,
+  modalContent: {
     backgroundColor: 'white',
-    borderRadius: 1,
-    padding: 10,
+    padding: 20,
+    borderRadius: 10,
+    width: '100%',
     alignItems: 'center',
-    elevation: 5,
-    width: '95%',
+    justifyContent: 'center',
   },
+
   buttonModalContainer: {
     width: '95%',
-    maxWidth: 400,
-    maxHeight: 400,
     padding: 5,
+  },
+  blackButton: {
+    width: '100%',
+    borderRadius: 10,
   },
   buttonMargin: {
     marginBottom: 10,

@@ -1,8 +1,12 @@
-import {SET_PENDING_VERIFICATION_FORM} from '../actions/admin';
+import {
+  SET_PENDING_VERIFICATION_FORM,
+  SET_ADMINAPPROVED_STORE,
+} from '../actions/admin';
 import {LOGOUT} from '../actions/authentication';
 
 const initialState = {
   allPendingVerificationForms: [],
+  approvedStores: [],
 };
 
 export default (state = initialState, action) => {
@@ -11,6 +15,11 @@ export default (state = initialState, action) => {
       return {
         ...state,
         allPendingVerificationForms: action.pendingStoreVerificationFormInfo,
+      };
+    case SET_ADMINAPPROVED_STORE:
+      return {
+        ...state,
+        approvedStores: action.approvedStoreInfo,
       };
     case LOGOUT:
       return {...initialState};

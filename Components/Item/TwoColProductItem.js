@@ -68,25 +68,27 @@ const TwoColProductItem = props => {
             </Text>
           </View>
         )}
-        {/*    <TouchableWithoutFeedback onPress={() => {}}>
-          <View style={styles.reviewContainer}>
-            <View style={styles.review}>
-              <AirbnbRating
-                starContainerStyle={{borderColor: 'red'}}
-                defaultRating={4}
-                size={13}
-                showRating={false}
-                isDisabled={true}
-                count={5}
-              />
-              <Text style={styles.reviewTextStyle}>({12})</Text>
-            </View>
-          </View>
-        </TouchableWithoutFeedback> */}
       </View>
     </TouchableOpacity>
   );
 };
+{
+  /*    <TouchableWithoutFeedback onPress={() => {}}>
+<View style={styles.reviewContainer}>
+  <View style={styles.review}>
+    <AirbnbRating
+      starContainerStyle={{borderColor: 'red'}}
+      defaultRating={4}
+      size={13}
+      showRating={false}
+      isDisabled={true}
+      count={5}
+    />
+    <Text style={styles.reviewTextStyle}>({12})</Text>
+  </View>
+</View>
+</TouchableWithoutFeedback> */
+}
 const styles = StyleSheet.create({
   twoColProductItem: {
     flex: 1,

@@ -25,7 +25,7 @@ const MyProductItems = props => {
     };
     downloadProductImage();
   }, [props.images]);
-
+  console.log();
   return (
     <Card style={styles.MyProductItems}>
       <View style={styles.itemContainer}>
@@ -38,9 +38,39 @@ const MyProductItems = props => {
           <Text numberOfLines={1} style={styles.title}>
             {props.title}
           </Text>
-          <Text numberOfLines={1} style={styles.price}>
-            PHP {props.price}
+          <Text numberOfLines={1} style={styles.category}>
+            {props.category}
           </Text>
+          <Text numberOfLines={1} style={styles.price}>
+            ₱{props.price}
+          </Text>
+          <Text numberOfLines={1} style={styles.price}>
+            Stocks:
+          </Text>
+          <View style={styles.stockRowContainer}>
+            {Object.entries(props.productVariation).map(([key, value]) => {
+              return (
+                <Text key={key} numberOfLines={1} style={styles.stockRowText}>
+                  {key}:{value}
+                </Text>
+              );
+            })}
+            {/*  {(props.smallStock != '' || props.smallStock != 0) && (
+              <Text numberOfLines={1} style={styles.stockRowText}>
+                Small:{props.smallStock}
+              </Text>
+            )}
+            {(props.mediumStock != '' || props.mediumStock != 0) && (
+              <Text numberOfLines={1} style={styles.stockRowText}>
+                Medium:{props.mediumStock}
+              </Text>
+            )}
+            {(props.largeStock != '' || props.largeStock != 0) && (
+              <Text numberOfLines={1} style={styles.stockRowText}>
+                Large:{props.largeStock}
+              </Text>
+            )} */}
+          </View>
         </View>
       </View>
       <View style={styles.buttonContainer}>
@@ -90,12 +120,30 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textTransform: 'uppercase',
   },
+  category: {
+    color: 'black',
+    fontSize: 12,
+    textTransform: 'lowercase',
+  },
   price: {
     color: 'black',
     fontSize: 12,
-    fontWeight: 'bold',
     textTransform: 'uppercase',
   },
+  stock: {
+    color: 'black',
+    fontSize: 12,
+    textTransform: 'capitalize',
+  },
+  stockRowContainer: {
+    flexDirection: 'row',
+  },
+  stockRowText: {
+    color: 'black',
+    marginRight: 5,
+    textTransform: 'capitalize',
+  },
+
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'center',

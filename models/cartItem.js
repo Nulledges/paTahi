@@ -1,6 +1,7 @@
 class cartItem {
   constructor(
     id,
+    variantId,
     productId,
     quantity,
     storeId,
@@ -9,11 +10,14 @@ class cartItem {
     productPrimaryImage,
     productPrice,
     productTitle,
-    reqMeasurements,
-    myMeasurements,
+    /*    reqMeasurements,
+    myMeasurements, */
     isRated,
+    chosenSize,
+    isSelected,
   ) {
     this.id = id;
+    this.variantId = variantId;
     this.productId = productId;
     this.quantity = quantity;
     this.storeId = storeId;
@@ -22,9 +26,11 @@ class cartItem {
     this.productPrimaryImage = productPrimaryImage;
     this.productPrice = productPrice;
     this.productTitle = productTitle;
-    this.reqMeasurements = reqMeasurements;
-    this.myMeasurements = myMeasurements;
+    /*     this.reqMeasurements = reqMeasurements;
+    this.myMeasurements = myMeasurements; */
     this.isRated = isRated;
+    this.chosenSize = chosenSize;
+    this.isSelected = isSelected;
   }
 }
 

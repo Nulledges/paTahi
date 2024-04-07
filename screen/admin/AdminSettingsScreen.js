@@ -22,9 +22,9 @@ const AdminSettingsScreen = () => {
   };
   return (
     <View style={styles.AdminSettingsScreen}>
-      <Card style={styles.adminSettingScreenContainer}>
+      <Card style={styles.cardContainer}>
         <SecondButton
-          style={styles.textStyle}
+          customTextStyle={styles.textStyle}
           label="LOGOUT"
           onPress={() => {
             logout();
@@ -37,16 +37,13 @@ const AdminSettingsScreen = () => {
 const styles = StyleSheet.create({
   AdminSettingsScreen: {
     flex: 1,
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-    marginTop: 5,
     backgroundColor: '#E8E8E8',
   },
-  adminSettingScreenContainer: {
-    width: '100%',
-    maxHeight: 400,
-    alignItems: 'center',
-    justifyContent: 'center',
+  cardContainer: {
+    margin: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginVertical: 2,
   },
   textStyle: {
     color: 'red',

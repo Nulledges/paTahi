@@ -19,6 +19,12 @@ import chatReducer from './store/reducers/chat';
 import measurementReducer from './store/reducers/measurement';
 import ratingReducer from './store/reducers/ratingComment';
 import notificationReducer from './store/reducers/notification';
+import salesReducer from './store/reducers/sales';
+import customerReducer from './store/reducers/customer';
+import paymentReducer from './store/reducers/payment';
+import categoryReducer from './store/reducers/category';
+import requestReducer from './store/reducers/request';
+
 const App = () => {
   /* enableLatestRenderer(); */
   const store = configureStore({
@@ -35,6 +41,12 @@ const App = () => {
       measure: measurementReducer,
       rating: ratingReducer,
       notification: notificationReducer,
+      sales: salesReducer,
+      customer: customerReducer,
+      payment: paymentReducer,
+      category: categoryReducer,
+      request: requestReducer,
+
     },
     middleware: getDefaultMiddleware =>
       getDefaultMiddleware({serializableCheck: false, immutableCheck: false}),

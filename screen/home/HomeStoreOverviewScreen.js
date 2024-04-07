@@ -34,6 +34,7 @@ const HomeStoreOverviewScreen = props => {
       }}
     />
   );
+
   return (
     <View style={styles.storeOverviewScreen}>
       <View style={styles.itemsContainer}>

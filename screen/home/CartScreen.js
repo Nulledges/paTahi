@@ -24,35 +24,203 @@ const CartScreen = props => {
   const cartTotalPrice = useSelector(state => state.cart.totalAmount);
   const specificProduct = useSelector(state => state.products.cartProducts);
   const cartItems = useSelector(state => state.cart.items);
+  const cartProducts = useSelector(state => state.cart.cartProducts);
   const approvedStore = useSelector(state => state.store.approvedCartStores);
+  const selectedProducts = cartProducts.filter(
+    product => product.isSelected,
+  ).length;
 
   useEffect(() => {
-    let uniqueStores = [];
-    cartItems.map(items => {
-      uniqueStores.push(items.storeId);
-    });
-    const uniqueId = [...new Set(uniqueStores)];
-    if (uniqueStores.length === 0) {
-    } else {
-      dispatch(productActions.fetchCartProducts(uniqueId));
-      dispatch(storeActions.fetchCartStore(uniqueId));
+    try {
+      let uniqueStores = [];
+      cartProducts.map(items => {
+        uniqueStores.push(items.storeId);
+      });
+      const uniqueId = [...new Set(uniqueStores)];
+      if (uniqueStores.length === 0) {
+      } else {
+        dispatch(productActions.fetchCartProducts(uniqueId));
+        dispatch(storeActions.fetchCartStore(uniqueId));
+      }
+      setUniqueStoreId(uniqueId);
+    } catch (error) {
+      console.log('error at useEffect 1 ' + error);
     }
-    setUniqueStoreId(uniqueId);
-  
-  }, [cartItems, cartTotalPrice]);
+  }, [cartProducts]);
 
+  useEffect(() => {
+    if (specificProduct.length > 0) {
+      cartProducts.map(cart => {
+        const addProduct = specificProduct.find(
+          product => product.id === cart.productId,
+        );
+        for (const key in addProduct.productVariation) {
+          if (cart.chosenSize == key) {
+            if (cart.quantity > addProduct.productVariation[key]) {
+              const exceededQuantity =
+                cart.quantity - addProduct.productVariation[key];
+              const newQuantity = cart.quantity - exceededQuantity;
+              dispatch(
+                cartActions.updateExceededQuantity(cart.id, newQuantity),
+              );
+              Alert.alert(
+                'Stock error!',
+                `Please note that due to limited stock, we've adjusted the quantity of ${cart.productTitle}(${cart.chosenSize}) in your cart.You now have ${newQuantity} units instead of the originally requested ${cart.quantity} units. `,
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {},
+                  },
+                ],
+              );
+            }
+          }
+        }
+        /*     console.log(addProduct)
+        console.log(cart.chosenSize); */
+        /* switch (cart.chosenSize) {
+          case 'small':
+            if (cart.quantity > addProduct.smallStock) {
+              const exceededQuantity = cart.quantity - addProduct.smallStock;
+              const newQuantity = cart.quantity - exceededQuantity;
+              dispatch(
+                cartActions.updateExceededQuantity(cart.id, newQuantity),
+              );
+              Alert.alert(
+                'Stock error!',
+                `Please note that due to limited stock, we've adjusted the quantity of ${cart.productTitle}(${cart.chosenSize}) in your cart.You now have ${newQuantity} units instead of the originally requested ${cart.quantity} units. `,
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {},
+                  },
+                ],
+              );
+
+              break;
+            }
+            break;
+          case 'medium':
+            if (cart.quantity > addProduct.mediumStock) {
+              const exceededQuantity = cart.quantity - addProduct.mediumStock;
+              const newQuantity = cart.quantity - exceededQuantity;
+              dispatch(
+                cartActions.updateExceededQuantity(cart.id, newQuantity),
+              );
+              Alert.alert(
+                'Stock error!',
+                `Please note that due to limited stock, we've adjusted the quantity of ${cart.productTitle}(${cart.chosenSize}) in your cart.You now have ${newQuantity} units instead of the originally requested ${cart.quantity} units. `,
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {},
+                  },
+                ],
+              );
+              break;
+            }
+            break;
+          case 'large':
+            if (cart.quantity > addProduct.largeStock) {
+              const exceededQuantity = cart.quantity - addProduct.largeStock;
+              const newQuantity = cart.quantity - exceededQuantity;
+              dispatch(
+                cartActions.updateExceededQuantity(cart.id, newQuantity),
+              );
+              Alert.alert(
+                'Stock error!',
+                `Please note that due to limited stock, we've adjusted the quantity of ${cart.productTitle}(${cart.chosenSize}) in your cart.You now have ${newQuantity} units instead of the originally requested ${cart.quantity} units. `,
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {},
+                  },
+                ],
+              );
+              break;
+            }
+            break;
+        } */
+      });
+    }
+  }, []);
+  /*   useEffect(() => {
+
+
+    cartProducts.map(cart => {
+      const addProduct = specificProduct.find(
+        product => product.id === cart.productId,
+      );
+
+
+      switch (cart.chosenSize) {
+        case 'small':
+          if(cart.quantity > addProduct.smallStock){
+            console.log(cart.quantity - addProduct.smallStock);
+          }
+
+      
+          break;
+      }
+    });
+  }, []); */
   /*   const renderItem = ({item}) => {
     return (
       <View>
     
         <CartItem productTitle={item.productTitle} />
-      </View>
+      </View>                                                 
     );
   }; */
+
   const checkOutHandler = () => {
-    props.navigation.navigate('CHECKOUT', {
-      uniqueStoreId: uniqueStoreId,
-    });
+    if (selectedProducts != 0) {
+      props.navigation.navigate('CHECKOUT', {
+        uniqueStoreId: uniqueStoreId,
+      });
+    } else {
+      Alert.alert('Error!', 'No item Selected', [
+        {
+          text: 'OK',
+          onPress: () => {},
+        },
+      ]);
+    }
+    /*     if (selectedProducts != 0) {
+      cartProducts.map(cart => {
+        const addProduct = specificProduct.find(
+          product => product.id === cart.productId,
+        );
+
+        switch (cart.chosenSize) {
+          case 'small':
+            if (cart.quantity > addProduct.smallStock) {
+              console.log(cart.quantity - addProduct.smallStock);
+              console.log('small');
+            }
+
+            break;
+          case 'medium':
+            if (cart.quantity > addProduct.mediumStock) {
+              console.log(cart.quantity - addProduct.mediumStock);
+              console.log('medium');
+            }
+
+            break;
+          case 'large':
+            if (cart.quantity > addProduct.largeStock) {
+              console.log(cart.quantity - addProduct.largeStock);
+
+              console.log('large');
+            }
+            break;
+        }
+      });
+ 
+    } else {
+      
+    }
+ */
     /* if (cartItems.length === 0) {
       return {};
     }
@@ -106,7 +274,7 @@ const CartScreen = props => {
           flexGrow: 1,
         }}
         style={styles.itemsContainer}>
-        {cartItems.length === 0 && (
+        {cartProducts.length === 0 && (
           <Card style={styles.noItemContainer}>
             <Text style={styles.textStyle}>
               There are no items in this cart
@@ -142,7 +310,7 @@ const CartScreen = props => {
                 </TouchableWithoutFeedback>
               </View>
               <View style={styles.cartItemsContainer}>
-                {cartItems.map(cart => {
+                {cartProducts.map(cart => {
                   const addProduct = specificProduct.find(
                     product => product.id === cart.productId,
                   );
@@ -153,21 +321,33 @@ const CartScreen = props => {
                         <CartItem
                           minus={() => {
                             dispatch(
-                              cartActions.removeFromCart(cart.productId),
+                              cartActions.minusQuantityByOne(
+                                cart.id,
+                                cart.quantity,
+                              ),
                             );
                           }}
                           plus={() => {
                             dispatch(
-                              cartActions.addToCart(addProduct, null, null),
+                              cartActions.addQuantityByOne(
+                                cart.id,
+                                cart.quantity,
+                                addProduct,
+                                cart.chosenSize,
+                              ),
                             );
                           }}
                           key={cart.id}
+                          cartId={cart.id}
                           quantity={cart.quantity}
                           productTitle={cart.productTitle}
                           productPrice={cart.productPrice}
                           images={cart.productPrimaryImage}
-                          reqMeasurements={cart.reqMeasurements}
-                          myMeasurements={cart.myMeasurements}
+                          chosenSize={cart.chosenSize}
+                          isSelected={cart.isSelected}
+                          /*        productStock={addProduct.productStock} */
+                          /*       reqMeasurements={cart.reqMeasurements}
+                          myMeasurements={cart.myMeasurements} */
                         />
                       </View>
                     )
@@ -178,7 +358,7 @@ const CartScreen = props => {
           );
         })}
       </ScrollView>
-      {cartItems.length > 0 && (
+      {cartProducts.length > 0 && (
         <Card style={styles.addToCartButtonContainer}>
           <View style={styles.addToCartButtonItems}>
             <View style={styles.addToCartTextContainer}>
@@ -190,7 +370,7 @@ const CartScreen = props => {
             <View style={styles.addToCartButton}>
               <MainButton
                 onPress={checkOutHandler}
-                label={'Check Out ' + `(${cartItems.length})`}
+                label={'Check Out ' + `(${selectedProducts})`}
               />
             </View>
           </View>

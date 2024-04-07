@@ -47,6 +47,23 @@ export const updatePhoneNumber = (PhoneNumber, userId) => {
       .then(() => {
         console.log('User updated!');
       });
+    firestore()
+      .collection('stores')
+      .where('userId', '==', userId)
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.docs.forEach(item => {
+          console.log(item.id);
+          console.log(item.data());
+          firestore()
+            .collection('stores')
+            .doc(item.id)
+            .update({phoneNumber: parseInt(PhoneNumber)})
+            .then(() => {
+              console.log('User updated!');
+            });
+        });
+      });
   };
 };
 /* export const updateUsername = (username, userId) => {
@@ -82,7 +99,7 @@ export const updateUsername = (username, userId) => {
       const batch = firestore().batch();
 
       // Update user document
-      const userRef = firestore.collection('Users').doc(userId);
+      const userRef = firestore().collection('Users').doc(userId);
       batch.update(userRef, {username: username});
       console.log('User updated!');
 
@@ -130,9 +147,7 @@ export const updateNotificationToken = (notificationToken, userId) => {
       .collection('Users')
       .doc(userId)
       .update({notificationToken: notificationToken})
-      .then(() => {
-        console.log('User Notification Token Updated!');
-      });
+      .then(() => {});
   };
 };
 /* export const updateProfileImages = (

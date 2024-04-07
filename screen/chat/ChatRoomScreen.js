@@ -1,4 +1,4 @@
-import React, {useEffect, useReducer, useCallback} from 'react';
+import React, {useEffect, useReducer, useCallback, useState} from 'react';
 import {
   View,
   FlatList,
@@ -15,56 +15,40 @@ import * as chatActions from '../../store/actions/chat';
 import Card from '../../Components/UI/Card';
 import NormalCustomInput from '../../Components/UI/Inputs/NormalCustomInput';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import storage from '@react-native-firebase/storage';
 const UPDATE_TEXT = 'UPDATE_TEXT';
-const chatReducer = (state, action) => {
-  if (action.type === UPDATE_TEXT) {
-    const updatedValues = {
-      ...state.inputValues,
-      [action.input]: action.value,
-    };
-    const updatedValidities = {
-      ...state.inputValidities,
-      [action.input]: action.isValid,
-    };
-    let updatedFormIsValid = true;
-    for (key in updatedValidities) {
-      updatedFormIsValid = updatedFormIsValid && updatedValidities[key];
-    }
-    return {
-      formIsValid: updatedFormIsValid,
-      inputValues: updatedValues,
-      inputValidities: updatedValidities,
-    };
-  }
-  return state;
-};
+
 const ChatRoomScreen = props => {
   const dispatch = useDispatch();
-
+  const [profileImage, setProfileImage] = useState();
+  const [message, setMessage] = useState('');
   const userId = useSelector(state => state.auth.userId);
   const messageList = useSelector(state => state.chat.messages);
 
-  const [inputState, dispatchInputState] = useReducer(chatReducer, {
-    inputValues: {
-      sendMessage: '',
-    },
-    inputValidities: {
-      sendMessage: false,
-    },
-    formIsValid: false,
-  });
-
   const messageHandler = async () => {
-    if (inputState.inputValues.sendMessage != '') {
+    if (message != '') {
       dispatch(
         chatActions.createMessage(
-          inputState.inputValues.sendMessage,
+          message,
           props.route.params.chatId,
         ),
       );
+      setMessage('')
     }
   };
+  useEffect(() => {
+    const downloadProductImage = async () => {
+      const fromStorage = await storage()
+        .ref(
+          props.route.params.storeIcon == undefined
+            ? `profile/` + props.route.params.profileIcon
+            : `stores/icons/` + props.route.params.storeIcon,
+        )
+        .getDownloadURL();
+      setProfileImage(fromStorage);
+    };
+    downloadProductImage();
+  }, [props.route.params.profileIcon, props.route.params.storeIcon]);
   //fetch messages
   useEffect(() => {
     try {
@@ -76,6 +60,22 @@ const ChatRoomScreen = props => {
       console.log('Error at chat Screen: ' + error);
     }
   }, []);
+  const handleMessageChange = text => {
+    setMessage(text);
+  };
+  useEffect(() => {
+    props.navigation.setOptions({
+      headerTitle:
+        props.route.params.storeName == undefined
+          ? props.route.params.customerName
+          : props.route.params.storeName,
+      headerTintColor: 'black',
+
+      headerStyle: {
+        backgroundColor: '#FFFFFF',
+      },
+    });
+  }, []);
   const renderItem = ({item}) => {
     const currentUser = userId;
     const isCurrentUser = item.senderId === currentUser;
@@ -85,20 +85,20 @@ const ChatRoomScreen = props => {
           style={
             isCurrentUser ? '' : {flexDirection: 'row', alignItems: 'center'}
           }>
-          {isCurrentUser ? (
-            ''
-          ) : (
-            <Image
-              resizeMode="stretch"
-              style={{
-                borderRadius: 50,
-                width: 50,
-                height: 50,
-                backgroundColor: 'red',
-              }}
-              source={{uri: 'https://wallpaperaccess.com/full/317501.jpg'}}
-            />
-          )}
+          {isCurrentUser
+            ? ''
+            : profileImage && (
+                <Image
+                  resizeMode="stretch"
+                  style={{
+                    borderRadius: 50,
+                    width: 50,
+                    height: 50,
+                    backgroundColor: '#E8E8E8',
+                  }}
+                  source={{uri: profileImage}}
+                />
+              )}
           <View
             style={
               isCurrentUser
@@ -111,17 +111,7 @@ const ChatRoomScreen = props => {
       </View>
     );
   };
-  const inputChangeHandler = useCallback(
-    (id, chatTextValue, chatTextValidity) => {
-      dispatchInputState({
-        type: UPDATE_TEXT,
-        value: chatTextValue,
-        isValid: chatTextValidity,
-        input: id,
-      });
-    },
-    [dispatchInputState],
-  );
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -137,13 +127,20 @@ const ChatRoomScreen = props => {
       />
       <Card style={styles.CardContainer}>
         <View style={{width: '85%'}}>
-          <NormalCustomInput
-            //props from customInput
-            placeHolder="Aa"
-            //props to add on custom input
-            id="sendMessage"
-            onInputChange={inputChangeHandler}
-            returnKeyType="done"
+          <TextInput
+            placeholderTextColor={'#545454'}
+            style={{
+              padding: 10,
+              marginBottom: 5,
+              borderBottomWidth: 1,
+              height: 50,
+              fontSize: 14,
+              backgroundColor: '#E8E8E8',
+              color: 'black',
+            }}
+            placeholder="Aa"
+            value={message}
+            onChangeText={handleMessageChange}
           />
         </View>
         <ScrollView style={{width: '10%', marginLeft: '3%'}}>

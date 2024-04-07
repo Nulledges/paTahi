@@ -83,8 +83,8 @@ const StoreOverviewItem = props => {
 const styles = StyleSheet.create({
   store: {
     flex: 1,
-
-    marginVertical: 5,
+    borderRadius: 10,
+    margin: 5,
   },
   storeContainer: {
     height: 330,

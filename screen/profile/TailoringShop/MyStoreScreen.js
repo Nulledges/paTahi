@@ -115,7 +115,9 @@ const MyStoreScreen = props => {
       <Card style={styles.cardContainer}>
         <SecondButton
           onPress={() => {
-            props.navigation.navigate('WALK IN CUSTOMER');
+            props.navigation.navigate('WALK IN CUSTOMER', {
+              storeId: myStoreInformation.storeId,
+            });
           }}
           label="Walk-in Customers"
         />
@@ -123,7 +125,25 @@ const MyStoreScreen = props => {
       <Card style={styles.cardContainer}>
         <SecondButton
           onPress={() => {
-            props.navigation.navigate('APPLICATION OVERVIEW');
+            props.navigation.navigate('TAILOR CHAT', {
+              storeId: myStoreInformation.storeId,
+            });
+          }}
+          label="CHAT"
+        />
+      </Card>
+      <Card style={styles.cardContainer}>
+        <SecondButton
+          onPress={() => {
+            props.navigation.navigate('TAILORNOTIFICATION');
+          }}
+          label="NOTIFICATION"
+        />
+      </Card>
+      <Card style={styles.cardContainer}>
+        <SecondButton
+          onPress={() => {
+            props.navigation.navigate('SALES REPORT');
           }}
           label="Sales Report"
         />

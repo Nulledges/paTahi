@@ -9,9 +9,11 @@ import {
   StyleSheet,
   Dimensions,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import storage from '@react-native-firebase/storage';
 import ImageView from 'react-native-image-viewing';
+import SkeletonPlaceHolder from 'react-native-skeleton-placeholder';
 const {width} = Dimensions.get('screen');
 const height = width * 0.8;
 const ProductDetailImageItem = props => {
@@ -19,6 +21,7 @@ const ProductDetailImageItem = props => {
   const [active, setActive] = useState(0);
   const [productImages, setProductImages] = useState([]);
   const [imageViewIsVisible, setImageViewIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const change = ({nativeEvent}) => {
     const slide =
       nativeEvent.contentOffset.x / nativeEvent.layoutMeasurement.width;
@@ -33,6 +36,8 @@ const ProductDetailImageItem = props => {
     }
 
     const primaryImage = async () => {
+      setIsLoading(true);
+
       const primary = await storage()
         .ref(`products/primary/${props.primaryImage}`)
         .getDownloadURL()
@@ -47,34 +52,35 @@ const ProductDetailImageItem = props => {
         arrayImages.push({uri: fromStorage});
         setProductImages(arrayImages);
       });
+      setTimeout(async () => {
+        setIsLoading(false);
+      }, 1000);
     };
     primaryImage();
   }, [props.images, props.primaryImage]);
-  /*  setTimeout(async () => { */
-  /*    }, 3000); */
+
   return (
-    <View>
-      <View style={styles.container}>
-        {productImages && (
+    <View style={styles.container}>
+      {isLoading ? (
+        <SkeletonPlaceHolder backgroundColor="#a3a3a3">
+          <SkeletonPlaceHolder.Item height={'100%'} />
+        </SkeletonPlaceHolder>
+      ) : (
+        productImages && (
           <FlatList
             ref={flatlistRef}
-            getItemLayout={(data, index) => ({
-              length: width,
-              offset: width * index,
-              index,
-            })}
             showsHorizontalScrollIndicator={false}
             horizontal
             data={productImages}
             onScroll={change}
             pagingEnabled
-            style={styles.imageScroll}
             renderItem={item => {
               return (
                 <TouchableWithoutFeedback
                   onPress={() => {
                     setImageViewIsVisible(true);
-                  }}>
+                  }}
+                  style={styles.imageContainer}>
                   <Image
                     key={item.index}
                     source={{uri: item.item.uri}}
@@ -84,14 +90,18 @@ const ProductDetailImageItem = props => {
               );
             }}
           />
-        )}
+        )
+      )}
+
+      {!isLoading && (
         <View style={styles.pagination}>
           <Text style={styles.paginationActiveText}>
             {parseInt(Math.round(active + 1))}/{' '}
             {props.images == undefined ? '' : props.images.length + 1}
           </Text>
         </View>
-      </View>
+      )}
+
       <ImageView
         images={productImages}
         onImageIndexChange={index => {
@@ -116,16 +126,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width,
-    height,
-  },
-  imageScroll: {
-    width,
-    height,
-  },
-  productImages: {
-    width,
-    height,
-    resizeMode: 'stretch',
+    height: '100%',
   },
   pagination: {
     flexDirection: 'row',

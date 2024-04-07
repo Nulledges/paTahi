@@ -6,6 +6,9 @@ import {
   StyleSheet,
   ScrollView,
   TouchableWithoutFeedback,
+  Modal,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {v4 as uuid} from 'uuid';
 
@@ -14,7 +17,10 @@ import MainButton from '../../Components/UI/CustomButton/MainButton';
 import {useDispatch, useSelector} from 'react-redux';
 import * as cartActions from '../../store/actions/cart';
 import * as orderActions from '../../store/actions/order';
+import * as paymentActions from '../../store/actions/payment';
+import * as productActions from '../../store/actions/product';
 import CheckoutItems from '../../Components/Item/CheckoutItems';
+import WebViewItem from '../../Components/Item/WebViewItem';
 const CheckOutScreen = props => {
   const dispatch = useDispatch();
   /*   const timestamp = Date.now();
@@ -23,63 +29,110 @@ const CheckOutScreen = props => {
   const specificProduct = useSelector(state => state.products.cartProducts);
   const cartItems = useSelector(state => state.cart.items);
   const approvedStore = useSelector(state => state.store.approvedCartStores);
-
+  const paymentDetails = useSelector(state => state.payment.paymentDetails);
+  const userInformation = useSelector(state => state.user.myInformation);
+  const cartProducts = useSelector(state => state.cart.cartProducts);
   const paymentMethod = props.route.params?.paymentMethod;
   const uniqueStoreId = props.route.params?.uniqueStoreId;
-  console.log(uuid());
-  console.log(cartItems);
-  cartItems.map(items => {
-    console.log(items.myMeasurements);
-  });
+  const [toPay, setToPay] = useState();
+  const [showWebView, setShowWebView] = useState(false);
 
-  /* 
-  console.log(props.route.params.cartStoreItems);
-  console.log(props.route.params.productIds);
-  console.log(props.route.params.totalPrice);
-  console.log(props.route.params.storeIdItem);
-  console.log(props.route.params.storeName); */
+  useEffect(() => {
+    const items = [];
+    const products = [];
+    cartProducts.map(items => {
+      if (items.isSelected == true) {
+        const item = {
+          name: items.productTitle + `(${items.chosenSize})`,
+          price: +items.productPrice,
+          quantity: items.quantity,
+        };
+        products.push(item);
+      }
+    });
+    items.push({id: uuid(), items: products});
 
-  const placeOrderHandler = () => {
-    uniqueStoreId.map(storeIdItem => {
-      const cartStoreInfo = approvedStore.find(
-        cart => cart.storeId == storeIdItem,
-      );
+    setToPay(items);
+  }, []);
+  useEffect(() => {
+    if (paymentDetails.length == undefined) {
+      setShowWebView(false);
+      uniqueStoreId.map(storeIdItem => {
+        const cartStoreInfo = approvedStore.find(
+          cart => cart.storeId == storeIdItem,
+        );
 
-      let cartStoreItems = [];
-      let productIds = [];
-      /*     let ratedStatus = [{}]; */
-      let totalPrice = 0;
-      cartItems.map(cart => {
-        if (cart.storeId == storeIdItem) {
-          totalPrice = +totalPrice + +cart.productPrice * +cart.quantity;
-          cartStoreItems.push(cart);
-          productIds.push(cart.productId);
-          /*   ratedStatus[0][cart.productId] = false; */
-        }
+        let cartStoreItems = [];
+        let productIds = [];
+
+        let totalPrice = 0;
+        cartProducts.map(cart => {
+          if (cart.storeId == storeIdItem && cart.isSelected == true) {
+            totalPrice = +totalPrice + +cart.productPrice * +cart.quantity;
+            cartStoreItems.push(cart);
+            productIds.push(cart.productId);
+
+            dispatch(
+              productActions.updateProductStock(
+                cart.productId,
+                cart.quantity,
+                cart.chosenSize,
+              ),
+            );
+            dispatch(cartActions.deleteProductFromCart(cart.id));
+          }
+        });
+
+        dispatch(
+          orderActions.addOrder(
+            cartStoreItems,
+            totalPrice,
+            storeIdItem,
+            cartStoreInfo.storeName,
+            userInformation.username,
+            userInformation.phoneNumber,
+          ),
+        );
       });
 
-      dispatch(
-        orderActions.addOrder(
-          cartStoreItems,
-          productIds,
-          totalPrice,
-          storeIdItem,
-          cartStoreInfo.storeName,
-          /*           ratedStatus, */
-        ),
-      );
-    });
+      dispatch(paymentActions.emptyPaymentDetail());
+      Alert.alert('Payment', 'Payment succeded', [
+        {
+          text: 'OK',
+          onPress: () => {
+            props.navigation.reset({routes: [{name: 'HOMEBOTTOM'}]});
+            props.navigation.navigate('BOTTOMACCOUNT');
+            props.navigation.navigate('USER ORDERS SCREEN');
 
-    dispatch(cartActions.emptyCart()),
-      props.navigation.reset({routes: [{name: 'HOME'}]});
+            props.navigation.navigate('MY ORDERS', {
+              screen: 'TOPICKUP',
+            });                   
+          },
+        },
+      ]);
+    }
+  }, [paymentDetails]);
+  const placeOrderHandler = () => {
+    setShowWebView(true);
   };
-  /*  console.log(props.route.params.uniqueStoreId);
-  console.log(cartTotalPrice);
-  console.log(cartItems);
-  console.log(approvedStore);
-  console.log(paymentMethod); */
+
   return (
     <View style={styles.container}>
+      <Modal
+        animationType="slide"
+        visible={showWebView}
+        onRequestClose={!setShowWebView}>
+        <View style={{flex: 1}}>
+          <TouchableOpacity
+            onPress={() => {
+              setShowWebView(false);
+            }}
+            style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>X</Text>
+          </TouchableOpacity>
+          <WebViewItem items={toPay} />
+        </View>
+      </Modal>
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
@@ -101,17 +154,18 @@ const CheckOutScreen = props => {
                 </TouchableWithoutFeedback>
               </View>
               <View style={styles.cartItemsContainer}>
-                {cartItems.map(cart => {
+                {cartProducts.map(cart => {
                   /*    const addProduct = specificProduct.find(
                     product => product.id === cart.productId,
                   ); */
-                  if (cart.storeId == storeIdItem) {
+                  if ((cart.storeId == storeIdItem, cart.isSelected == true)) {
                     totalPrice =
                       +totalPrice + +cart.productPrice * +cart.quantity;
                     quantity = +quantity + +cart.quantity;
                   }
                   return (
-                    cart.storeId === storeIdItem && (
+                    cart.storeId === storeIdItem &&
+                    cart.isSelected == true && (
                       <View key={cart.id}>
                         <CheckoutItems
                           key={cart.id}
@@ -119,8 +173,9 @@ const CheckOutScreen = props => {
                           images={cart.productPrimaryImage}
                           productTitle={cart.productTitle}
                           productPrice={cart.productPrice}
-                          reqMeasurements={cart.reqMeasurements}
-                          myMeasurements={cart.myMeasurements}
+                          chosenSize={cart.chosenSize}
+                          /*  reqMeasurements={cart.reqMeasurements}
+                          myMeasurements={cart.myMeasurements} */
                         />
                       </View>
                     )
@@ -131,16 +186,13 @@ const CheckOutScreen = props => {
                 <TouchableWithoutFeedback
                   key={storeIdItem}
                   onPress={() => {
-                    props.navigation.navigate('PAYMENT METHOD', {
+                    /*  props.navigation.navigate('PAYMENT METHOD', {
                       uniqueStoreId: uniqueStoreId,
-                    });
+                    }); */
                   }}>
                   <View style={styles.orderTotalItemContainer}>
                     <Text style={styles.textStyle}>{'Payment Method'}</Text>
-                    <Text style={styles.textStyle}>
-                      {paymentMethod ? paymentMethod : 'Select'}
-                      {' >'}
-                    </Text>
+                    <Text style={styles.textStyle}>PayPal</Text>
                   </View>
                 </TouchableWithoutFeedback>
               </View>
@@ -263,6 +315,21 @@ const styles = StyleSheet.create({
   textSmallGrey: {
     color: 'rgba(0,0,0,0.3)',
     fontSize: 12,
+  },
+  closeButton: {
+    width: 50,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    zIndex: 1,
+    backgroundColor: 'grey',
+    padding: 5,
+    borderRadius: 100,
+    margin: 50,
+  },
+  closeButtonText: {
+    color: 'black',
+    fontWeight: 'bold',
   },
 });
 

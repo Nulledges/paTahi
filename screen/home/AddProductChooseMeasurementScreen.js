@@ -21,7 +21,7 @@ const AddProductChooseMeasurementScreen = props => {
   const dispatch = useDispatch();
   const specificProduct = props.route.params?.specificProduct;
   const measurementInfo = useSelector(state => state.measure.myMeasurement);
- 
+
   useEffect(() => {
     try {
       dispatch(measurementActions.fetchUserMeasurement);
@@ -29,6 +29,7 @@ const AddProductChooseMeasurementScreen = props => {
       console.log('Error on AddProductChooseMeasurementScreen: ' + error);
     }
   }, []);
+
   const renderItem = ({item}) => {
     return (
       <Card style={styles.cardContainer}>

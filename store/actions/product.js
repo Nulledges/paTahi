@@ -11,61 +11,71 @@ export const SET_CART_PRODUCTS = 'SET_CART_PRODUCT';
 export const SET_SPECIFIC_PRODUCT = 'SET_SPECIFIC_PRODUCT';
 export const UPDATE_PRODUCT = 'UPDATE_PRODUCT';
 
-export const createProduct = (
+export const addProduct = (
   storeId,
   productTitle,
   productImages,
   primaryImage,
   productCategory,
-  bodyMeasurementNeeded,
   productDescription,
-  productPrice,
+  productVariation,
+  price,
   isActive,
 ) => {
-  return (dispatch, getState) => {
-    const userId = getState().auth.userId;
+  return async (dispatch, getState) => {
+    try {
+      const userId = getState().auth.userId;
 
-    let primaryImageFilename = '';
-    let productFileName = [];
-    primaryImage.map(value => {
-      primaryImageFilename = value.imageFileName;
-      storage()
-        .ref(`products/primary/${value.imageFileName}`)
-        .putFile(value.imageUri)
-        .on('state_changed', taskSnapshot => {
-          console.log(
-            `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-          );
-        });
-    });
+      let primaryImageFilename = '';
+      let productFileName = [];
+      const ratings = {
+        '1Star': 0,
+        '2Star': 0,
+        '3Star': 0,
+        '4Star': 0,
+        '5Star': 0,
+      };
+      primaryImage.map(value => {
+        primaryImageFilename = value.imageFileName;
+        storage()
+          .ref(`products/primary/${value.imageFileName}`)
+          .putFile(value.imageUri)
+          .on('state_changed', taskSnapshot => {
+            console.log(
+              `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+            );
+          });
+      });
 
-    productImages.map(value => {
-      productFileName.push(value.imageFileName);
-      storage()
-        .ref(`products/${value.imageFileName}`)
-        .putFile(value.imageUri)
-        .on('state_changed', taskSnapshot => {
-          console.log(
-            `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
-          );
-        });
-    });
-
-    firestore()
-      .collection('Products')
-      .add({
+      productImages.map(value => {
+        productFileName.push(value.imageFileName);
+        storage()
+          .ref(`products/${value.imageFileName}`)
+          .putFile(value.imageUri)
+          .on('state_changed', taskSnapshot => {
+            console.log(
+              `${taskSnapshot.bytesTransferred} transferred out of ${taskSnapshot.totalBytes}`,
+            );
+          });
+      });
+      const productRef = firestore().collection('Products').doc();
+      await productRef.set({
+        id: productRef.id,
         storeId: storeId,
         productTitle: productTitle,
         productImages: productFileName,
         productPrimaryImage: primaryImageFilename,
         productCategory: productCategory,
-        bodyMeasurementNeeded: bodyMeasurementNeeded,
         productDescription: productDescription,
-        productPrice: productPrice,
+        productVariation: productVariation,
+        productPrice: price,
         isActive: isActive,
         status: 'approved',
-      })
-      .then(console.log('Product Added!'));
+        ratings: ratings,
+      });
+    } catch (error) {
+      console.log('error at addProduct at product.js' + error);
+    }
   };
 };
 export const publishProduct = productId => {
@@ -102,8 +112,8 @@ export const updateProduct = (
   initialPrimaryImage,
   primaryImage,
   productCategory,
-  bodyMeasurementNeeded,
   productDescription,
+  productVariation,
   productPrice,
   isActive,
 ) => {
@@ -129,9 +139,6 @@ export const updateProduct = (
     return true;
   };
   if (arraysAreEqual(initialImages, productFileName)) {
-    console.log(initialPrimaryImage);
-    console.log(primaryProductFilename);
-
     if (primaryProductFilename === initialPrimaryImage) {
       firestore()
         .collection('Products')
@@ -139,9 +146,9 @@ export const updateProduct = (
         .update({
           productTitle: productTitle,
           productCategory: productCategory,
-          bodyMeasurementNeeded: bodyMeasurementNeeded,
           productDescription: productDescription,
           productPrice: productPrice,
+          productVariation: productVariation,
           productPrimaryImage: primaryProductFilename,
           isActive: isActive,
         })
@@ -166,26 +173,16 @@ export const updateProduct = (
             .update({
               productTitle: productTitle,
               productCategory: productCategory,
-              bodyMeasurementNeeded: bodyMeasurementNeeded,
+
               productDescription: productDescription,
               productPrice: productPrice,
+              productVariation: productVariation,
               productPrimaryImage: primaryProductFilename,
               isActive: isActive,
             })
             .then(() => {
               console.log('Product updated/image uploaded!');
             });
-          /*      if (productFileName[0] != initialImages[0]) {
-        firestore()
-          .collection('orders')
-          .where('productId', 'array-contains', productId)
-          .get()
-          .then(product => {
-            product.docs.forEach(doc => {
-              console.log("doc ID FOR product on orders "+ doc.id);
-            });
-          });
-      } */
         });
       });
       storage().ref(`products/primary/${initialPrimaryImage}`).delete();
@@ -209,26 +206,16 @@ export const updateProduct = (
             .update({
               productTitle: productTitle,
               productCategory: productCategory,
-              bodyMeasurementNeeded: bodyMeasurementNeeded,
+
               productDescription: productDescription,
               productPrice: productPrice,
+              productVariation: productVariation,
               productPrimaryImage: primaryProductFilename,
               isActive: isActive,
             })
             .then(() => {
               console.log('Product updated/image uploaded!');
             });
-          /*      if (productFileName[0] != initialImages[0]) {
-        firestore()
-          .collection('orders')
-          .where('productId', 'array-contains', productId)
-          .get()
-          .then(product => {
-            product.docs.forEach(doc => {
-              console.log("doc ID FOR product on orders "+ doc.id);
-            });
-          });
-      } */
         });
       });
       storage().ref(`products/primary/${initialPrimaryImage}`).delete();
@@ -255,25 +242,15 @@ export const updateProduct = (
               productTitle: productTitle,
               productImages: productFileName,
               productCategory: productCategory,
-              bodyMeasurementNeeded: bodyMeasurementNeeded,
+
               productDescription: productDescription,
               productPrice: productPrice,
+              productVariation: productVariation,
               isActive: isActive,
             })
             .then(() => {
               console.log('Product updated/image uploaded!');
             });
-          /*      if (productFileName[0] != initialImages[0]) {
-        firestore()
-          .collection('orders')
-          .where('productId', 'array-contains', productId)
-          .get()
-          .then(product => {
-            product.docs.forEach(doc => {
-              console.log("doc ID FOR product on orders "+ doc.id);
-            });
-          });
-      } */
         });
         if (productFileName[0] != initialImages[0]) {
           console.log('not equal');
@@ -284,20 +261,6 @@ export const updateProduct = (
       }
     });
 
-    /*   if (productFileName[0] === initialImages[0]) {
-  console.log('product');
-  const ordersRef = firestore().collection('orders');
-
-  ordersRef
-    .where('item', 'array-contains', productId)
-    .get()
-    .then(product => { */
-    /*  let batch = firestore().batch(); */
-    /*      product.docs.forEach(doc => {
-        console.log(doc.id);
-      });
-    });
-} */
     //delete image
     initialImages.map(value => {
       const a = productFileName.find(prod => prod === value);
@@ -314,9 +277,10 @@ export const updateProduct = (
                 productTitle: productTitle,
                 productImages: productFileName,
                 productCategory: productCategory,
-                bodyMeasurementNeeded: bodyMeasurementNeeded,
+
                 productDescription: productDescription,
                 productPrice: productPrice,
+                productVariation: productVariation,
                 isActive: isActive,
               })
               .then(() => {
@@ -326,6 +290,102 @@ export const updateProduct = (
       }
     });
   }
+};
+export const updateProductStock = (productId, quantity, chosenSize) => {
+  // Retrieve the current product data
+  return dispatch => {
+    firestore()
+      .collection('Products')
+      .doc(productId)
+      .get()
+      .then(doc => {
+        // Get the current product stock
+        for (const key in doc.data().productVariation) {
+          if (chosenSize == key) {
+            const stock = doc.data().productVariation[key];
+            let currentStock = doc.data().productVariation;
+            const newStock = +stock - quantity;
+            currentStock[key] = newStock;
+            firestore()
+              .collection('Products')
+              .doc(productId)
+              .update({
+                productVariation: currentStock,
+              })
+              .then(() => {
+                console.log('Product updated!');
+              })
+              .catch(error => {
+                console.error('Error updating product:', error);
+              });
+          }
+
+          /*   */
+        }
+        /*  switch (chosenSize) {
+          case 'small':
+            const smallStock = doc.data().smallStock;
+           
+            const newSmallStock = +smallStock - quantity;
+
+
+            firestore()
+              .collection('Products')
+              .doc(productId)
+              .update({
+                smallStock: newSmallStock,
+              })
+              .then(() => {
+                console.log('Product updated!');
+              })
+              .catch(error => {
+                console.error('Error updating product:', error);
+              });
+            break;
+          case 'medium':
+            const mediumStock = doc.data().mediumStock;
+         
+            const newMediumStock = +mediumStock - quantity;
+
+          
+            firestore()
+              .collection('Products')
+              .doc(productId)
+              .update({
+                mediumStock: newMediumStock,
+              })
+              .then(() => {
+                console.log('Product updated!');
+              })
+              .catch(error => {
+                console.error('Error updating product:', error);
+              });
+            break;
+          case 'large':
+            const largeStock = doc.data().largeStock;
+          
+            const newLargeStock = +largeStock - quantity;
+
+          
+            firestore()
+              .collection('Products')
+              .doc(productId)
+              .update({
+                largeStock: newLargeStock,
+              })
+              .then(() => {
+                console.log('Product updated!');
+              })
+              .catch(error => {
+                console.error('Error updating product:', error);
+              });
+            break;
+        } */
+      })
+      .catch(error => {
+        console.error('Error getting document:', error);
+      });
+  };
 };
 export const fetchUserStoreProducts = storeId => {
   //FOR USER STORE
@@ -338,22 +398,9 @@ export const fetchUserStoreProducts = storeId => {
         const storeProducts = [];
         documentSnapshot.docs.forEach(item => {
           const productData = item.data();
-          storeProducts.push(
-            new product(
-              item.id,
-              productData.storeId,
-              productData.productTitle,
-              productData.productImages,
-              productData.productCategory,
-              productData.bodyMeasurementNeeded,
-              productData.productDescription,
-              productData.productPrice,
-              productData.productPrimaryImage,
-              productData.isActive,
-              productData.status,
-            ),
-          );
+          storeProducts.push(productData);
         });
+
         dispatch({
           type: SET_USER_PRODUCTS,
           userStoreProducts: storeProducts,
@@ -405,9 +452,14 @@ export const fetchStoreProduct = storeId => {
               productData.bodyMeasurementNeeded,
               productData.productDescription,
               productData.productPrice,
+              productData.productStock,
               productData.productPrimaryImage,
               productData.isActive,
               productData.status,
+              productData.largeStock,
+              productData.mediumStock,
+              productData.smallStock,
+              productData.productVariation,
             ),
           );
         });
@@ -439,9 +491,14 @@ export const fetchAllProducts = (dispatch, getState) => {
             productData.bodyMeasurementNeeded,
             productData.productDescription,
             productData.productPrice,
+            productData.productStock,
             productData.productPrimaryImage,
             productData.isActive,
             productData.status,
+            productData.largeStock,
+            productData.mediumStock,
+            productData.smallStock,
+            productData.productVariation,
           ),
         );
       });
@@ -479,6 +536,7 @@ export const fetchCartProducts = storeId => {
         const storeProducts = [];
         documentSnapshot.docs.forEach(item => {
           const productData = item.data();
+
           storeProducts.push(
             new product(
               item.id,
@@ -489,9 +547,14 @@ export const fetchCartProducts = storeId => {
               productData.bodyMeasurementNeeded,
               productData.productDescription,
               productData.productPrice,
+              productData.productStock,
               productData.productPrimaryImage,
               productData.isActive,
               productData.status,
+              productData.largeStock,
+              productData.mediumStock,
+              productData.smallStock,
+              productData.productVariation,
             ),
           );
         });

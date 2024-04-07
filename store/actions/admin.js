@@ -1,9 +1,10 @@
 import storeVerificationForm from '../../models/storeVerificationForm';
+import stores from '../../models/stores';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 
 export const SET_PENDING_VERIFICATION_FORM = 'SET_PENDING_VERIFICATION_FORM';
-
+export const SET_ADMINAPPROVED_STORE = 'SET_ADMINAPPROVED_STORE';
 export const fetchPendingTailorApplication = (dispatch, getState) => {
   firestore()
     .collection('storeApplications')
@@ -54,4 +55,39 @@ export const rejectStore = (id, storeId) => {
       .update({status: 'rejected', dateVerified: currentDate});
     firestore().collection('stores').doc(storeId).update({status: 'rejected'});
   };
+};
+export const fetchAllApprovedStore = (dispatch, getState) => {
+  firestore()
+    .collection('stores')
+    .where('status', '==', 'approved')
+    .onSnapshot(documentSnapshot => {
+      const allApprovedStores = [];
+      documentSnapshot.docs.forEach(item => {
+        const approvedStore = item.data();
+
+        allApprovedStores.push(
+          new stores(
+            approvedStore.storeId,
+            approvedStore.activeProduct,
+            approvedStore.email,
+            approvedStore.inactiveProduct,
+            approvedStore.phoneNumber,
+            approvedStore.status,
+            approvedStore.storeIcon,
+            approvedStore.storeImage,
+            approvedStore.storeName,
+            approvedStore.storeOwner,
+            item.id,
+            approvedStore.latitude,
+            approvedStore.longitude,
+            approvedStore.isSubscribed,
+            approvedStore.subscriptionId
+          ),
+        );
+      });
+      dispatch({
+        type: 'SET_ADMINAPPROVED_STORE',
+        approvedStoreInfo: allApprovedStores,
+      });
+    });
 };

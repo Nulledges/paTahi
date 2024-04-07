@@ -12,6 +12,14 @@ import {
 } from 'react-native';
 import MainButton from '../../UI/CustomButton/MainButton';
 const ProductDetailInformationItem = props => {
+  let totalStocks = 0;
+  {
+    props.specificProduct.productVariation &&
+      Object.values(props.specificProduct.productVariation).map(value => {
+        totalStocks += parseInt(value);
+      });
+  }
+
   return (
     <View>
       <View style={styles.productBasicContainer}>
@@ -22,12 +30,24 @@ const ProductDetailInformationItem = props => {
           <View style={{margin: 5}}>
             <Text style={styles.price}>₱ {props.productPrice}</Text>
           </View>
-          {/*  <View style={{margin: 5}}>
-            <MainButton
-              style={{backgroundColor: 'red', borderColor: 'red'}}
-              label={'Add to Cart'}
-            />
-          </View> */}
+          <View style={{margin: 5}}>
+            <Text
+              style={totalStocks <= 0 ? styles.outOfStocks : styles.inStocks}>
+              {totalStocks <= 0 ? 'Out of stock' : 'In Stock'}
+            </Text>
+          </View>
+        </View>
+      </View>
+      <View style={styles.productDescriptionTextContainer}>
+        <View style={styles.productDescriptionInfoTextContainer}>
+          <Text style={styles.productDescriptionText}>Category</Text>
+        </View>
+      </View>
+      <View style={styles.productDescriptionContainer}>
+        <View style={styles.productDescriptionInfoTextContainer}>
+          <Text style={styles.productDescriptionOverviewText}>
+            {props.specificProduct.productCategory}
+          </Text>
         </View>
       </View>
       <View style={styles.productDescriptionTextContainer}>
@@ -45,6 +65,26 @@ const ProductDetailInformationItem = props => {
 
       <View style={styles.productDescriptionTextContainer}>
         <View style={styles.productDescriptionInfoTextContainer}>
+          <Text style={styles.productDescriptionText}>Variation Stock</Text>
+        </View>
+      </View>
+      <View style={styles.productDescriptionContainer}>
+        <View style={styles.productDescriptionInfoTextContainer}>
+          {props.specificProduct.productVariation &&
+            Object.entries(props.specificProduct.productVariation).map(
+              ([key, value]) => {
+                return (
+                  <Text key={key} style={styles.productDescriptionOverviewText}>
+                    {key.toUpperCase()}:{value}
+                  </Text>
+                );
+              },
+            )}
+        </View>
+      </View>
+
+      {/*       <View style={styles.productDescriptionTextContainer}>
+        <View style={styles.productDescriptionInfoTextContainer}>
           <Text style={styles.productDescriptionText}>
             Required Measurements
           </Text>
@@ -60,7 +100,7 @@ const ProductDetailInformationItem = props => {
             );
           })}
         </View>
-      </View>
+      </View> */}
     </View>
   );
 };
@@ -81,6 +121,18 @@ const styles = StyleSheet.create({
   },
   price: {
     color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  inStocks: {
+    color: 'green',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  outOfStocks: {
+    color: 'red',
     fontSize: 16,
     fontWeight: 'bold',
     textTransform: 'uppercase',

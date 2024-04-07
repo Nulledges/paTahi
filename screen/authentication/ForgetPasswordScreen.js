@@ -2,14 +2,9 @@ import React, {useReducer, useState, useCallback} from 'react';
 import {
   StyleSheet,
   Keyboard,
-  useWindowDimensions,
   View,
   ScrollView,
-  Text,
-  Button,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {useDispatch} from 'react-redux';
@@ -45,6 +40,7 @@ const forgetPasswordReducer = (state, action) => {
 };
 const ForgetPasswordScreen = props => {
   const [inputError, setInputError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
 
   const [inputState, dispatchInputState] = useReducer(forgetPasswordReducer, {
@@ -93,12 +89,16 @@ const ForgetPasswordScreen = props => {
       setInputError(true);
       return;
     }
-    dispatch(
-      autenticationActions.forgotPassword(
-        inputState.inputValues.forgetPassword,
-      ),
-      props.navigation.goBack(),
-    );
+    setIsLoading(true);
+    setTimeout(() => {
+      dispatch(
+        autenticationActions.forgotPassword(
+          inputState.inputValues.forgetPassword,
+        ),
+      );
+
+      setIsLoading(false);
+    }, 850);
   };
 
   return (
@@ -106,7 +106,8 @@ const ForgetPasswordScreen = props => {
       style={styles.container}
       contentContainerStyle={{
         flexGrow: 1,
-        alignItems: 'center',
+        marginHorizontal: '2%',
+        marginTop: '1.5%',
         justifyContent: 'center',
       }}>
       <Card style={styles.itemContainer}>
@@ -128,22 +129,42 @@ const ForgetPasswordScreen = props => {
           />
         </View>
         <View style={styles.buttonContainer}>
-          <MainButton label="CONFIRM" onPress={confirmHandler} />
+          {isLoading == true ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="white" />
+            </View>
+          ) : (
+            <MainButton
+              style={styles.saveButton}
+              label="CONFIRM"
+              onPress={confirmHandler}
+            />
+          )}
         </View>
       </Card>
     </ScrollView>
   );
 };
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#E8E8E8',
-  },
-  itemContainer: {
+  loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    maxHeight: 400,
-    padding: 20,
+    backgroundColor: 'black',
+    borderRadius: 10,
+    height: 50,
+  },
+  container: {
+    flex: 1,
+
+    backgroundColor: '#E8E8E8',
+  },
+  itemContainer: {
+    width: '100%',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 20,
+    borderRadius: 10,
   },
   inputContainer: {
     width: '100%',
@@ -152,6 +173,12 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
     marginBottom: 10,
+  },
+  saveButton: {
+    width: '100%',
+    backgroundColor: 'black',
+
+    borderRadius: 10,
   },
 });
 export default ForgetPasswordScreen;

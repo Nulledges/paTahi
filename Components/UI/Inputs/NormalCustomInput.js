@@ -39,6 +39,13 @@ const NormalCustomInput = props => {
     }
   }, [id, onInputChange, inputState]);
 
+  useEffect(() => {
+    // Reset the input value when resetValue changes
+    console.log(props.isResetting);
+    if (props.isResetting == true) {
+      dispatch({type: INPUT_CHANGE, value: '', isValid: true});
+    }
+  }, [props.isResetting]);
   const textChangeHandler = text => {
     const emailRegex =
       /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -81,7 +88,7 @@ const NormalCustomInput = props => {
         style={styles.textInput}
         {...props}
         placeholder={props.placeHolder}
-        value={inputState.value}
+        value={props.isResetting ? '' : inputState.value}
         onBlur={lostFocusHandler}
         onChangeText={textChangeHandler}
         ref={props.forwardRef}

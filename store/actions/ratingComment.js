@@ -44,21 +44,48 @@ export const createRatingAndComment = (
       });
       //fetch then update
       const orderRef = firestore().collection('orders').doc(orderId);
+      const productRef = firestore().collection('Products').doc(productId);
+
       const orderSnapshot = await orderRef.get();
+      const productSnapshot = await productRef.get();
+
+      const productData = productSnapshot.data();
       const orderData = orderSnapshot.data();
-      const items = orderData.items;
-      const updatedItems = items.filter(item => item.id !== variantId);
-      const variantItem = items.find(item => item.id === variantId);
+
+      const productRatings = productData.ratings;
+      const orderItems = orderData.items;
+
+      /*  const increment = firebase.firestore.FieldValue.increment(1); */
+
+      switch (productRating) {
+        case 1:
+          productRatings['1Star'] = productRatings['1Star'] + 1;
+          break;
+        case 2:
+          productRatings['2Star'] = productRatings['2Star'] + 1;
+          break;
+        case 3:
+          productRatings['3Star'] = productRatings['3Star'] + 1;
+          break;
+        case 4:
+          productRatings['4Star'] = productRatings['4Star'] + 1;
+          break;
+        case 5:
+          productRatings['5Star'] = productRatings['5Star'] + 1;
+          break;
+      }
+      const updatedItems = orderItems.filter(item => item.id !== variantId);
+      const variantItem = orderItems.find(item => item.id === variantId);
       variantItem.isRated = true;
       updatedItems.push(variantItem);
+      batch.update(productRef, {ratings: productRatings});
       batch.update(orderRef, {items: updatedItems});
       await batch.commit();
 
       console.log('Order items updated with batch write!');
-      const allItemsRated = items.every(item => item.isRated === true);
+      const allItemsRated = orderItems.every(item => item.isRated === true);
       if (allItemsRated) {
         orderRef.update({status: 'collected/rated'});
-        console.log('All Items are rated');
       }
     } catch (error) {
       console.log(

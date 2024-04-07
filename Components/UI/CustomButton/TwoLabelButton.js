@@ -13,6 +13,9 @@ const TwoLabelButton = props => {
         }}>
         <Text style={{...styles.TextStyle, ...props.FirstTextStyle}}>
           {props.firstLabel}
+          <View style={{...props.customStyle}}>
+            <Text>{props.numberOfNotification}</Text>
+          </View>
         </Text>
         <Text style={{...styles.TextStyle, ...props.secondTextStyle}}>
           {props.secondLabel}

@@ -39,9 +39,36 @@ const OrderCustomerItem = props => {
             )
           )}
         </View>
-        <Text style={styles.textStyle}>{props.productTitle}</Text>
-        <Text style={styles.textStyle}>{props.productPrice}</Text>
-        <Text style={styles.textStyle}>{'x' + props.productQuantity}</Text>
+        <View style={styles.infoContainer}>
+          <View>
+            <Text style={styles.textStyle}>
+              {props.productTitle + `(${props.chosenSize})`}
+            </Text>
+          </View>
+
+          <View style={styles.quantityContainer}>
+            <View
+              style={{
+                width: '60%',
+                justifyContent: 'flex-end',
+                alignItems: 'flex-start',
+              }}>
+              <Text style={styles.textStyle}>
+                ₱ {parseInt(props.productPrice).toFixed(2)}
+              </Text>
+            </View>
+            <View
+              style={{
+                width: '40%',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-end',
+              }}>
+              <Text style={styles.textStyle}>
+                {'x' + props.productQuantity}
+              </Text>
+            </View>
+          </View>
+        </View>
       </View>
     </Card>
   );
@@ -56,16 +83,11 @@ const styles = StyleSheet.create({
   },
   itemContainer: {
     flexDirection: 'row',
-    margin: 10,
-    height: 75,
-    width: '100%',
-    overflow: 'hidden',
-    backgroundColor: 'white',
+    margin: 5,
   },
   imageContainer: {
     width: '20%',
     height: 75,
-    overflow: 'hidden',
   },
   image: {
     width: '100%',
@@ -73,6 +95,17 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     color: 'black',
+  },
+  infoContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    width: '80%',
+    padding: 5,
+  },
+  quantityContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
 
